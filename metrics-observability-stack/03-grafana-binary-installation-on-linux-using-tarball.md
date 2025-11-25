@@ -13,7 +13,7 @@ Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_sou
 
 **Or**
 
-**Download Binary package using command line:**
+### Download Binary package using command line:
 
 - Suppose we are working at our current **home directory** which is:
 
@@ -42,7 +42,14 @@ Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_sou
   > **Note:** Replace **proxy ip** with **real proxy ip**.
 
 
-**Extract files and Rename file**
+### Extract files
+
+- Go to the download directory
+  
+  ```bash
+  cd /home/broy/download
+  ```
+  > **Output:** This will take you to the download directory.
 
 - Extract the downloaded package:
   
@@ -57,7 +64,7 @@ Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_sou
 
 ## Prepare The System
 
-**Ensure system packages are updated**
+### Ensure system packages are updated
 
 - Debian/Ubuntu:
 
@@ -72,7 +79,7 @@ Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_sou
   ```
 
 
-**Create a dedicated user and group**
+### Create a dedicated user and group
 
 - Create grafana user and group:
 
@@ -92,7 +99,7 @@ Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_sou
   > **Output:** It will output the user and group id with their name.
 
 
-**Create the necessary directories**
+### Create the necessary directories
 
 - First create Grafana’s configuration directory:
 
@@ -124,7 +131,7 @@ sudo mkdir -p /etc/grafana /var/lib/grafana /var/log/grafana
 
 **Purpose:** Move executables to a **system path** and set **proper ownership** for the new file and directories.
 
-**Copy the Extracted file and folder to the installation path**
+### Copy the Extracted file and folder to the installation path
 
 - From the downloaded folder copy `grafana_12.3.0` folder to the `/usr/local` folder:
 
@@ -139,11 +146,11 @@ sudo mkdir -p /etc/grafana /var/lib/grafana /var/log/grafana
   ```
 
 **Note:**
-In the grafana **config directory** there is a `default.ini` config file for Grafana. But Grafana docs recommend editing `custom.ini`, never `defaults.ini`.
+> In the grafana config directory there is a `default.ini` config file for Grafana. But Grafana docs recommend editing `custom.ini`, never `defaults.ini`.
 So from the grafana directory we copy the provided `sample.ini` file and rename it `grafana.ini` config file and then paste it to the `/etc` config directory.
 
 
-**Set Proper Ownership to the created directory**
+### Set Proper Ownership to the created directory
 
 - Change the owner of `/usr/local/grafana` to grafana user:
 
@@ -249,7 +256,7 @@ sudo systemctl status grafana-server
 
 ## Verify Grafana
 
-Open your browser or use curl to check:
+**Open your browser or use curl to check**
 
 ```
 http://<your-server-ip>:3000
@@ -265,7 +272,7 @@ Default Login:
 
 ## Access Grafana Log
 
-**Access using journalctl**
+### Access using journalctl
 
 - You view them using the journalctl logging system:
 
@@ -275,7 +282,7 @@ Default Login:
   sudo journalctl -u grafana-server --since "10 min ago"
   ```
 
-**Access custom logs**
+### Access custom logs
 
 - Follow logs in real time:
 
