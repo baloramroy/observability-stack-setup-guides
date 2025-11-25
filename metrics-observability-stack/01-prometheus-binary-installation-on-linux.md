@@ -225,7 +225,7 @@ This SOP outlines the procedure for deploying **Prometheus** on a Linux system u
       --web.console.templates=/etc/prometheus/consoles \
       --web.console.libraries=/etc/prometheus/console_libraries
     
-    # Custom log location
+    # Custom log location: Optional
     #StandardOutput=append:/var/log/prometheus/prometheus.log
     #StandardError=append:/var/log/prometheus/prometheus-error.log
     
@@ -325,4 +325,32 @@ You can manually redirect logs to a file inside the systemd service.
  -   To view custom logs: `/var/log/prometheus`
 
 ---
+
+## UNINSTALL / ROLLBACK
+
+- Stop and disable service:
+  ```bash
+  sudo systemctl stop prometheus && sudo systemctl disable prometheus
+  ```
+
+- Remove service file:
+  ```bash
+  sudo rm -f /etc/systemd/system/prometheus.service
+  ```
+
+- Reload systemd:
+  ```bash
+  sudo systemctl daemon-reload
+  ```
+
+- Remove binary:
+  ```bash
+  sudo rm -f /usr/local/bin/prometheus
+  ```
+
+- Optional: remove user
+  ```bash
+  sudo userdel prometheus
+  ```
+
 
