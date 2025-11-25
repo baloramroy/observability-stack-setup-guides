@@ -57,7 +57,7 @@ This SOP outlines the procedure for deploying **Prometheus** on a Linux system u
 
 ---
 
-## PREPARE THE SYSTEM
+## Prepare The System
 
 **Ensure system packages are updated:**
 
