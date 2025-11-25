@@ -229,7 +229,7 @@ Download using this link (replace **X.Y.Z** with the version you choose):
 
 ---
 
-## ACCESS PROMETHEUS LOG
+## ACCESS NODE EXPORTER LOG
 
 Node Exporter prints logs to **STDOUT/STDERR**, so systemd journal stores logs.
 
@@ -243,7 +243,7 @@ Node Exporter prints logs to **STDOUT/STDERR**, so systemd journal stores logs.
 
 ---
 
-## OPTIONAL: WRITE LOGS TO A FILE
+## WRITE LOGS TO A FILE: OPTIONAL
 
 Not recommended, but possible.
 
