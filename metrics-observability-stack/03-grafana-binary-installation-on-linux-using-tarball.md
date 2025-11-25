@@ -9,9 +9,7 @@ Grafana is a **Prometheus** visualization tool. This SOP outlines the procedure 
 
 ## Download The Grafana Official Tarball
 
-Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_source=chatgpt.com) page and download the latest **(Standalone Linux Binaries)** Linux AMD64 tarball.
-
-**Or**
+> **Note:** Navigate to the [Grafana Downloads](https://grafana.com/grafana/download?utm_source=chatgpt.com) page and download the latest **(Standalone Linux Binaries)** Linux AMD64 tarball.
 
 ### Download Binary package using command line:
 
