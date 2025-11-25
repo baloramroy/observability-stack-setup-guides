@@ -208,7 +208,7 @@ This SOP outlines the procedure for deploying **Prometheus** on a Linux system u
 
 - Paste the following content:
 
-    ```
+    ```ini
     [Unit]
     Description=Prometheus Monitoring
     Wants=network-online.target
