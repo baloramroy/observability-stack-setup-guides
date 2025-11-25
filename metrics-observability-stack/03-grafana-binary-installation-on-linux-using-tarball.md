@@ -234,15 +234,16 @@ sudo chown -R grafana:grafana /usr/local/grafana /etc/grafana /var/lib/grafana /
   WantedBy=multi-user.target
   ```
 
+---
 
-- **Reload systemd and Start Grafana**
+## Reload systemd and Start Grafana
 
-  ```bash
-  sudo systemctl daemon-reload
-  sudo systemctl start grafana-server
-  sudo systemctl enable grafana-server
-  sudo systemctl status grafana-server
-  ```
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+sudo systemctl status grafana-server
+```
 
 ---
 
@@ -254,7 +255,7 @@ Open your browser or use curl to check:
 http://<your-server-ip>:3000
 ```
 
-**Default Login:**
+Default Login:
 - **Username:** admin
 - **Password:** admin
 
@@ -264,7 +265,7 @@ http://<your-server-ip>:3000
 
 ## Access Grafana Log
 
-**Using journalctl**
+**Access using journalctl**
 
 - You view them using the journalctl logging system:
 
