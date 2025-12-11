@@ -130,7 +130,7 @@ The objective of this SOP is to define the standardized procedure for installing
   chown -R 65534:65534 prom_config prom_data prom_logs
   ```
 
-## Create Network for Docker Container
+### Create Network for Docker Container
 
 - Here we will use a **custom bridge network** for prometheus docker container
   ```bash
