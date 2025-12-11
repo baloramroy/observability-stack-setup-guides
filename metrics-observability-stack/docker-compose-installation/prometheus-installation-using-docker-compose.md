@@ -119,10 +119,10 @@ The objective of this SOP is to define the standardized procedure for installing
   ```bash
   docker run --rm -it --entrypoint /bin/sh prom/prometheus:latest
   /prometheus $ whoami
-   Output: nobody
+  Output: nobody
   
   /prometheus $ id nobody
-   Output: uid=65534(nobody) gid=65534(nobody) groups=65534(nobody)
+  Output: uid=65534(nobody) gid=65534(nobody) groups=65534(nobody)
   ```
 
 - Now change the directory permission with this **user id = 65534**
