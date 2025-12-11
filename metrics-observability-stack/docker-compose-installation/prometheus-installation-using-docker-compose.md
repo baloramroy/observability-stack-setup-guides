@@ -112,7 +112,7 @@ The objective of this SOP is to define the standardized procedure for installing
   ls -ld prom_config prom_data prom_logs
   ```
 
-## Set Necessary Permission
+### Set Necessary Permission
 
 - First check prometheus image for **ownership** information
 
