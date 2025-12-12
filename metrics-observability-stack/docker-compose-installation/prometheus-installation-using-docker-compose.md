@@ -113,11 +113,13 @@ The objective of this SOP is to define the standardized procedure for installing
   ```
 
 ### Set Necessary Permission
-
-- First check prometheus image for **ownership** information
+- Verify user and ID information by running temporary prometheus container:
 
   ```bash
   docker run --rm -it --entrypoint /bin/sh prom/prometheus:latest
+  ```
+- Then run `whoami` and `id` command inside container
+  ```
   /prometheus $ whoami
   Output: nobody
   
