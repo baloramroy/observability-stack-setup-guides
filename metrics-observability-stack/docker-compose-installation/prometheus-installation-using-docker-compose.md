@@ -5,13 +5,17 @@ The objective of this SOP is to define the standardized procedure for installing
 
 ## Prerequisites
 - **Host OS** with **Docker Engine** installed and running.
-  **Verify:**\
-  `docker --version` and `sudo systemctl status docker`.
-  
+  ```bash
+  docker --version
+  # or
+  sudo systemctl status docker
+  ```  
 - **Docker Compose** available (v2 plugin or docker-compose).
-  **Verify:**\
-  `docker compose version` or `docker-compose --version`.
-  
+  ```bash
+  docker compose version`
+  # or
+  docker-compose --version
+  ```  
 - Sufficient **disk space** for Prometheus data (default retains TSDB on host).
 - **Shell access** (sudo/root) to create directories, update firewall, change SELinux context if required.
 
@@ -47,10 +51,21 @@ The objective of this SOP is to define the standardized procedure for installing
   ```
   **Output:** It will output the user and group id with their name.
 
-### Final Directory Structure
+### Create Network for Docker Container
+
+- Here we will use a **custom bridge network** for prometheus docker container
+  ```bash
+  docker network create monitoring
+  ```
+  **Note:** This network will **connect** all the **monitoring** service like **grafana**, **node exporter** and **alertmanager** together. 
+
+---
+
+## Directory Structure
+
+### Directory Structure for Pormetheus
 
 - The directory structure should be like this.
-
   ```
   /srv/prometheus/
   ├── config/
@@ -101,16 +116,16 @@ The objective of this SOP is to define the standardized procedure for installing
   ```bash
   mkdir prom_logs
   ```
-**We can Create all of it in one Command**
-- All in one Command:
-  ```bash
-  mkdir prom_config prom_data prom_logs
-  ```
-  
-- To verify file ownership:
-  ```bash
-  ls -ld prom_config prom_data prom_logs
-  ```
+ **We can Create all of it in one Command**
+ - All in one Command:
+   ```bash
+   mkdir prom_config prom_data prom_logs
+   ```
+   
+ - To verify file ownership:
+   ```bash
+   ls -ld prom_config prom_data prom_logs
+   ```
 
 ### Set Necessary Permission
 - Verify user and ID information by running temporary prometheus container:
@@ -131,13 +146,7 @@ The objective of this SOP is to define the standardized procedure for installing
   ```bash
   chown -R 65534:65534 prom_config prom_data prom_logs
   ```
-
-### Create Network for Docker Container
-
-- Here we will use a **custom bridge network** for prometheus docker container
-  ```bash
-  docker network create monitoring
-  ```
+---
 
 ## Create prometheus.yml (Prometheus config)
 
@@ -179,6 +188,7 @@ scrape_configs:
 
 >**Note:** Save the file. (Add extra scrape jobs later as needed.)
 
+---
 
 ## Create docker-compose.yml
 
@@ -214,6 +224,8 @@ networks:
 **Notes:**
 - `:ro` on the config file prevents Prometheus from modifying the host copy.
 - Change `prom/prometheus:latest` to a pinned tag (e.g., v2.45.0) for **production stability**.
+
+---
 
 ## Firewall Adjustment (if host firewall limits ports)
 - Open port **9090** (example for firewalld):
@@ -269,3 +281,5 @@ From the project directory:
 - **Configuration file:** `/home/observer/container/prometheus/prom_config/prometheus.yml`
 - **Data path:** `/home/observer/container/prometheus/prom_data`
 - **Log path:** `/home/observer/container/prometheus/prom_logs`
+
+---
