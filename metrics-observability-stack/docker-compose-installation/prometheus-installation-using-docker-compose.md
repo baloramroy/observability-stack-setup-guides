@@ -252,9 +252,10 @@ From the project directory:
 
 - Health check (from host or browser):
   - **Browser:**
-  
-    `http://192.168.0.106:9090/` → Prometheus UI home.
-    
+      ```
+      http://192.168.0.106:9090/
+      # Prometheus UI home.
+      ```
   - **Curl:**
       ```bash
       curl -sSf http://192.168.0.106:9090/-/ready
