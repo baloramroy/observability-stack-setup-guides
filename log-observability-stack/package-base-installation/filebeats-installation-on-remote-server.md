@@ -1,7 +1,7 @@
-# Install Filebeat on Remote Servers (From Zero)
+# Install Filebeat on Remote Servers
 
 
-## 0. Architecture
+## Architecture
 
 ```
 [Remote Server 1]      [Remote Server 2]      [Remote Server N]
@@ -48,7 +48,6 @@ reboot
 dnf update -y
 ```
 
----
 
 ### 1.3 Configure `/etc/hosts` for Logstash (VERY IMPORTANT)
 
@@ -186,6 +185,8 @@ You already have this, but verify:
 ```bash
 vi /etc/logstash/conf.d/filebeat.conf
 ```
+
+Check this configuration:
 
 ```conf
 input {
