@@ -1,17 +1,7 @@
-Perfect 👍
-Now you’re entering **real production ELK usage** — *centralized logging from remote servers*.
+# Install Filebeat on Remote Servers (From Zero)
 
-Below is a **from-zero, step-by-step, detailed guide** to install **Filebeat on remote servers** and send logs securely to your **central Logstash node**.
 
-This is exactly how ELK is used in real companies.
-
----
-
-# Step 5: Install Filebeat on Remote Servers (From Zero)
-
----
-
-## 0. Architecture (Understand First)
+## 0. Architecture
 
 ```
 [Remote Server 1]      [Remote Server 2]      [Remote Server N]
@@ -29,29 +19,28 @@ This is exactly how ELK is used in real companies.
 ```
 
 Key idea:
-• Remote servers **do NOT talk to Elasticsearch**
-• Only Logstash is exposed
-• Centralized control
+- Remote servers **do NOT talk to Elasticsearch**
+- Only Logstash is exposed
+- Centralized control
 
 ---
 
 ## 1. Prepare Remote Server
 
 Assume:
-• CentOS / RHEL / Rocky / Alma
-• IP example: `192.168.10.50`
-• Hostname: `app-server-1`
+- CentOS / RHEL / Rocky / Alma
+- IP example: `192.168.10.50`
+- Hostname: `app-server-1`
 
----
 
-### 1.1 Set Hostname (Remote Server)
+### 1.1 Set Remote Server Hostname
 
 ```bash
 hostnamectl set-hostname app-server-1
+#
 reboot
 ```
 
----
 
 ### 1.2 Update System
 
@@ -61,7 +50,7 @@ dnf update -y
 
 ---
 
-### 1.3 Configure `/etc/hosts` (VERY IMPORTANT)
+### 1.3 Configure `/etc/hosts` for Logstash (VERY IMPORTANT)
 
 ```bash
 vi /etc/hosts
@@ -73,13 +62,12 @@ Add:
 192.168.10.30  logstash-node
 ```
 
-(You do **NOT** need ES or Kibana here.)
+>You do **NOT** need ES or Kibana here.
 
 ---
 
 ## 2. Install Filebeat on Remote Server
 
----
 
 ### 2.1 Import Elastic GPG Key
 
@@ -87,7 +75,6 @@ Add:
 rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 ```
 
----
 
 ### 2.2 Add Elastic Repository
 
@@ -106,7 +93,6 @@ autorefresh=1
 type=rpm-md
 ```
 
----
 
 ### 2.3 Install Filebeat
 
@@ -118,24 +104,21 @@ dnf install filebeat -y
 
 ## 3. Configure Filebeat on Remote Server
 
----
-
 ### 3.1 Disable Elasticsearch Output
 
-Edit:
+**Edit:**
 
 ```bash
 vi /etc/filebeat/filebeat.yml
 ```
 
-Comment out:
+**Comment out:**
 
 ```yaml
 #output.elasticsearch:
 #  hosts: ["localhost:9200"]
 ```
 
----
 
 ### 3.2 Enable Logstash Output
 
@@ -146,7 +129,7 @@ output.logstash:
   hosts: ["logstash-node:5044"]
 ```
 
----
+
 
 ### 3.3 Enable System Module (Recommended)
 
@@ -154,7 +137,6 @@ output.logstash:
 filebeat modules enable system
 ```
 
----
 
 ### 3.4 Configure Log Paths
 
@@ -183,9 +165,8 @@ vi /etc/filebeat/modules.d/system.yml
 ### 4.1 Remote Server
 
 Filebeat does **outbound only**, so:
-✔ No firewall port needed on remote server
+- No firewall port needed on remote server
 
----
 
 ### 4.2 Logstash Node (IMPORTANT)
 
@@ -198,7 +179,7 @@ firewall-cmd --reload
 
 ---
 
-## 5. Configure Logstash (Central Node)
+## 5. Configure Logstash
 
 You already have this, but verify:
 
@@ -240,8 +221,6 @@ systemctl restart logstash
 
 ## 6. Start Filebeat on Remote Server
 
----
-
 ### 6.1 Test Configuration
 
 ```bash
@@ -254,7 +233,6 @@ Expected:
 Config OK
 ```
 
----
 
 ### 6.2 Test Output
 
@@ -282,21 +260,19 @@ systemctl status filebeat
 
 ## 7. Verify Logs from Remote Server
 
----
 
-### 7.1 Generate Test Log (Remote Server)
+### 7.1 Generate Test Log
 
 ```bash
 logger "Hello from remote server app-server-1"
 ```
 
----
 
 ### 7.2 Verify in Kibana
 
 In **Kibana → Discover**:
-• Index pattern: `filebeat-*`
-• Filter:
+- Index pattern: `filebeat-*`
+- Filter:
 
 ```text
 host.name : "app-server-1"
@@ -306,16 +282,16 @@ You should see the log.
 
 ---
 
-## 8. Identify Remote Servers in Kibana (IMPORTANT)
+## 8. Identify Remote Servers in Kibana
 
 Filebeat automatically adds:
-• `host.name`
-• `host.ip`
-• `agent.name`
+- `host.name`
+- `host.ip`
+- `agent.name`
 
 This allows:
-✔ Filtering per server
-✔ Dashboards per environment
+- Filtering per server
+- Dashboards per environment
 
 ---
 
@@ -333,7 +309,6 @@ Temporarily (lab only):
 setenforce 0
 ```
 
----
 
 ### Filebeat stopped sending logs
 
@@ -363,29 +338,4 @@ output.logstash:
   hosts: ["ls-1:5044","ls-2:5044"]
   loadbalance: true
 ```
-
 ---
-
-## 11. What You Have Achieved
-
-You now have:
-✔ Centralized logging
-✔ Remote servers sending logs
-✔ Secure architecture
-✔ Real DevOps ELK workflow
-
-This is **real-world ELK expertise**.
-
----
-
-## Next Steps (Very Important)
-
-Choose one:
-
-1. **TLS encryption** between Filebeat → Logstash
-2. Logstash **grok filters** for app logs
-3. Filebeat **for NGINX / Docker / Java apps**
-4. Dashboards & alerts
-5. Elastic Security SIEM basics
-
-Tell me what you want next — we’ll go deeper 🚀
