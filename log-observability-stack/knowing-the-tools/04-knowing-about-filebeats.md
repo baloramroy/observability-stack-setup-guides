@@ -1,5 +1,6 @@
-## Filebeat
+# Filebeat
 
+### What is Filebeat?
 Filebeat is a lightweight agent that collects logs from servers and forwards them to Logstash or Elasticsearch.
 
 **Common Beat types:**
@@ -9,6 +10,7 @@ Filebeat is a lightweight agent that collects logs from servers and forwards the
   * **Auditbeat** – audit data
   * **Heartbeat** – uptime monitoring
 
+---
 
 ### **Why Filebeat is needed**
 

@@ -1,7 +1,7 @@
-## ELK Stack Components
 
-### Elasticsearch
+# Elasticsearch
 
+### What is Elastic Search?
 Elasticsearch is a distributed search and analytics engine that stores data and allows fast searching, filtering, and analysis of logs and other data.
 
 ---
