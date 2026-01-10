@@ -1,9 +1,9 @@
-### 2.2 Logstash
+## Logstash
 
 Logstash is a powerful log processing engine that collects logs, processes them,and sends data to Elasticsearch for search and analysis.
 
 
-**Why Logstash is needed**
+### Why Logstash is needed
 
 Logs comes form the server is a raw logs. Raw logs are usually:
 
@@ -14,7 +14,7 @@ Logs comes form the server is a raw logs. Raw logs are usually:
 Logstash **converts raw logs into structured, searchable data** before storing them in Elasticsearch.
 
 
-**What Logstash actually does**
+### What Logstash actually does
 
 Logstash works using **pipelines**, and each pipeline has **3 stages**:
 
@@ -76,7 +76,7 @@ Where processed data goes.
    ```
 
 
-**Real-world use cases**
+### **Real-world use cases**
 
 1. System logs
 
@@ -91,7 +91,7 @@ Where processed data goes.
    * Response time extraction
 
 
-**Logstash position in ELK Stack**
+### **Logstash position in ELK Stack**
 
 ```
 Log Source

@@ -1,4 +1,4 @@
-# Kibana
+## Kibana
 
 ### What is Kiabana?
 Kibana is a data visualization and dashboard tool that is used to search, analyze, and visualize data stored in Elasticsearch.

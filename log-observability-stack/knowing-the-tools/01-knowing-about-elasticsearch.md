@@ -1,4 +1,4 @@
-## 2. ELK Stack Components
+## ELK Stack Components
 
 ### Elasticsearch
 
