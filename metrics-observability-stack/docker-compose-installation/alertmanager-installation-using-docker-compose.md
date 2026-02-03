@@ -25,7 +25,7 @@ The objective of this SOP is to define the standardized procedure for installing
 * **Shell access** (sudo/root) to create directories and manage permissions.
 * **External Docker network** shared with Prometheus (example: `monitoring`).
 * Sufficient **disk space** for Alertmanager state and logs.
-* Network access to pull Docker images.
+* **Network access** to pull **Docker images**.
 
 ---
 
@@ -170,7 +170,7 @@ The objective of this SOP is to define the standardized procedure for installing
 
 ---
 
-## Create alertmanager.yml (Alertmanager Configuration)
+## Create Alertmanager Configuration File 
 
 Create the configuration file:
 
@@ -198,13 +198,15 @@ This configuration is sufficient for initial deployment. Notification receivers 
 
 ---
 
-## Create docker-compose.yml
+## Create `docker-compose` file
 
 Create:
 
 ```
 ~/container/alertmanager/docker-compose.yml
 ```
+
+Compose file:
 
 ```yaml
 services:
