@@ -190,7 +190,7 @@ route:
 receivers:
   - name: 'default'
     # Notification integrations (Email, Slack, Webhook, MS Teams) can be added here
-    # Look for Notification integrations for this configurations.
+    # Look for Notification integrations sop for this configurations.
 ```
 
 **Note:**
@@ -295,13 +295,13 @@ docker compose ps
 ```bash
 docker compose logs -f alertmanager
 # or
-docker logs -f dc1-alertmanager
+docker logs -f alertmanager
 ```
 
 ### Health Check
 
 ```bash
-docker inspect -f '{{.State.Health.Status}}' dc1-alertmanager
+docker inspect -f '{{.State.Health.Status}}' alertmanager
 ```
 
 ### Access UI
