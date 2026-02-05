@@ -80,7 +80,7 @@ https://outlook.office.com/webhook/XXXXXXXX/IncomingWebhook/YYYYYYYY
 Example path:
 
 ```
-~/container/alertmanager/alertmanager_config/alertmanager.yml
+/home/observer/container/alertmanager/alertmanager_config/alertmanager.yml
 ```
 
 
@@ -104,8 +104,6 @@ receivers:
     msteamsv2_configs:
       - webhook_url: "https://outlook.office.com/webhook/XXXXXXXX/IncomingWebhook/YYYYYYYY"
         send_resolved: true
-        title: '{{ template "msteamsv2.default.title" . }}'  # Default title template
-        text: '{{ template "msteamsv2.default.text" . }}'  # Default text template
 ```
 
 **Important Notes:**
@@ -123,8 +121,6 @@ receivers:
 
   ```bash
   docker compose restart alertmanager
-  or
-  curl -X POST http://localhost:9093/-/reload
   ```
 
 - Verify Container Health
@@ -139,17 +135,20 @@ receivers:
 
 ### Step 1: Trigger a Test Alert
 
-Add a temporary test rule in **Prometheus alert rules yml** file:
+Add a temporary test rule in **prometheus/prom_config/alert_rules/test_rules.yml** file:
 
 ```yaml
-- alert: MSTeamsTestAlert
-  expr: vector(1)
-  for: 15s
-  labels:
-    severity: warning
-  annotations:
-    summary: "MS Teams test alert"
-    description: "This alert verifies Alertmanager to MS Teams integration."
+groups:
+- name: test-alerts
+  rules:
+  - alert: PrometheusTestAlert
+    expr: vector(1)
+    for: 10s
+    labels:
+      severity: critical
+    annotations:
+      summary: "🔥 Prometheus test alert"
+      description: "This is a forced test alert to verify Alertmanager integration."
 ```
 
 Reload Prometheus:
@@ -164,9 +163,9 @@ curl -X POST http://localhost:9090/-/reload
 
 **Expected Result:**
 
-* First alert appears in prometheus then alertmanager and then
-* Alert appears in Microsoft Teams channel
-* Alert title, summary, and description visible
+* First alert appears in **prometheus** then **alertmanager** and then
+* Alert appears in **Microsoft Teams channel**
+* Alert **title**, **summary**, and **description** visible
 * Alert resolves when rule is removed
 
 ---
