@@ -139,6 +139,12 @@ Grafana container runs as:
       environment:
         - GF_SECURITY_ADMIN_USER=admin
         - GF_SECURITY_ADMIN_PASSWORD=admin
+      healthcheck:
+        test: ["CMD", "wget", "--spider", "-q", "http://localhost:9093/-/healthy"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+        start_period: 30s
       networks:
         - monitoring
   
