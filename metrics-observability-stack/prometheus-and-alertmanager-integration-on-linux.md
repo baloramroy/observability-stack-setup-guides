@@ -170,29 +170,32 @@ Example path:
 
   ```yaml
   rule_files:
-    - "/etc/prometheus/alert-rules/*.yml"
+    - "alert-rules/*.yml"
   ```
 
 ### Force a Test Alert
 
-- Temporarily create a test rule:
+Temporarily create a test rule:
 
-  ```yaml
-  - alert: AlwaysFiringTest
+```yaml
+groups:
+- name: test-alerts
+  rules:
+  - alert: PrometheusTestAlert
     expr: vector(1)
     for: 10s
     labels:
-      severity: warning
+      severity: critical
     annotations:
-      summary: "Test alert"
-      description: "This is a test alert to verify Alertmanager integration."
-  ```
+      summary: "🔥 Prometheus test alert"
+      description: "This is a forced test alert to verify Alertmanager integration."
+```
 
-- Reload Prometheus and verify alert navigate to:
+Reload Prometheus and verify alert navigate to:
 
-  ```
-  Alerts
-  ```
+```
+Alerts
+```
 
 ### Verify Alert in Alertmanager
 
