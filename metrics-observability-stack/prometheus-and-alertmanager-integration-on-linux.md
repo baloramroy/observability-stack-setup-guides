@@ -78,11 +78,11 @@ Both containers **must be on the same Docker network** so Prometheus can resolve
 
 ### Locate Prometheus Configuration File
 
-Example path:
+- Example path:
 
-```
-/home/observer/container/prometheus/prom_config/prometheus.yml
-```
+  ```
+  /home/observer/container/prometheus/prom_config/prometheus.yml
+  ```
 
 #
 
@@ -116,12 +116,10 @@ Example path:
 - Use **host IP** when its a **binary installation** not **docker container**
 - Port **9093** is the default Alertmanager API port
 
----
+#
 
+### Reload or Restart Prometheus
 
-## Reload or Restart Prometheus
-
-### Reload Configuration
 
 - If lifecycle reload is enabled:
 
@@ -135,11 +133,9 @@ Example path:
   docker compose restart prometheus
   ```
 
----
+#
 
-## Verify Prometheus → Alertmanager Connectivity
-
-### Check Prometheus UI
+### Verify Prometheus and Alertmanager Connectivity
 
 - Open Prometheus UI:
 
@@ -166,36 +162,40 @@ Example path:
 
 ### Ensure Rule Files Are Loaded
 
-- Check example section in `prometheus.yml` file:
+  Check example section in `prometheus.yml` file:
 
   ```yaml
   rule_files:
     - "alert-rules/*.yml"
   ```
 
+#
+
 ### Force a Test Alert
 
-Temporarily create a test rule in **prometheus/prom_config/alert_rules/test_rules.yml** file:
+- Temporarily create a test rule in **prometheus/prom_config/alert_rules/test_rules.yml** file:
 
-```yaml
-groups:
-- name: test-alerts
-  rules:
-  - alert: PrometheusTestAlert
-    expr: vector(1)
-    for: 10s
-    labels:
-      severity: critical
-    annotations:
-      summary: "🔥 Prometheus test alert"
-      description: "This is a forced test alert to verify Alertmanager integration."
-```
+  ```yaml
+  groups:
+  - name: test-alerts
+    rules:
+    - alert: PrometheusTestAlert
+      expr: vector(1)
+      for: 10s
+      labels:
+        severity: critical
+      annotations:
+        summary: "🔥 Prometheus test alert"
+        description: "This is a forced test alert to verify Alertmanager integration."
+  ```
 
-Reload Prometheus and verify alert navigate to:
+- Reload Prometheus and verify alert navigate to:
 
-```
-Alerts
-```
+  ```
+  Alerts
+  ```
+
+#
 
 ### Verify Alert in Alertmanager
 
