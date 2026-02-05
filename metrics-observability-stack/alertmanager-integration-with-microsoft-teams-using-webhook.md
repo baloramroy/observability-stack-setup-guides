@@ -83,6 +83,7 @@ Example path:
 /home/observer/container/alertmanager/alertmanager_config/alertmanager.yml
 ```
 
+#
 
 ### Add Microsoft Teams Receiver
 
@@ -111,11 +112,9 @@ receivers:
 * `send_resolved: true` ensures resolve notifications are sent
 * `title` and `text` is not necessary for default template.
 
+#
 
----
-
-
-## Reload or Restart Alertmanager
+### Reload or Restart Alertmanager to update this configuration
 
 - Restart Alertmanager Container
 
