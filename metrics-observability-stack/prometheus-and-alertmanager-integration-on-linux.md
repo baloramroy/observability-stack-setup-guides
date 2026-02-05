@@ -175,7 +175,7 @@ Example path:
 
 ### Force a Test Alert
 
-Temporarily create a test rule:
+Temporarily create a test rule in **prometheus/prom_config/alert_rules/test_rules.yml** file:
 
 ```yaml
 groups:
