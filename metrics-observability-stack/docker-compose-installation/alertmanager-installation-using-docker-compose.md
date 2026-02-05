@@ -175,7 +175,7 @@ The objective of this SOP is to define the standardized procedure for installing
 Create the configuration file:
 
 ```
-~/container/alertmanager/alertmanager_config/alertmanager.yml
+vim /home/observer/container/alertmanager/alertmanager_config/alertmanager.yml
 ```
 
 Minimal configuration example:
@@ -203,7 +203,7 @@ This configuration is sufficient for initial deployment. Notification receivers 
 Create:
 
 ```
-~/container/alertmanager/docker-compose.yml
+vim /home/observer/container/alertmanager/docker-compose.yml
 ```
 
 Compose file:
@@ -306,7 +306,7 @@ docker inspect -f '{{.State.Health.Status}}' alertmanager
 ### Access UI
 
 ```
-http://192.168.20.126:9093
+http://<server_ip>:9093
 ```
 
 ---
