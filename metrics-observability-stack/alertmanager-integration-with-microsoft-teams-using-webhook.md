@@ -164,6 +164,7 @@ curl -X POST http://localhost:9090/-/reload
 
 **Expected Result:**
 
+* First alert appears in prometheus then alertmanager and then
 * Alert appears in Microsoft Teams channel
 * Alert title, summary, and description visible
 * Alert resolves when rule is removed
