@@ -84,7 +84,7 @@ Example path:
 /home/observer/container/prometheus/prom_config/prometheus.yml
 ```
 
----
+#
 
 ### Configure Alertmanager Target in Prometheus
 
@@ -98,7 +98,8 @@ Example path:
               - alertmanager:9093
   ```
 
-- For Binary installation we can use the server ip directly:
+- For Binary installation we can use the server ip directly:\
+  Edit `/etc/prometheus/promethus.yml`
   
   ```yaml
   alerting:
@@ -117,34 +118,6 @@ Example path:
 
 ---
 
-## Validate Prometheus Alert Rules
-
-### Ensure Rule Files Are Loaded
-
-Example section in `prometheus.yml`:
-
-```yaml
-rule_files:
-  - "/etc/prometheus/rules/*.yml"
-```
-
-### Example Alert Rule
-
-```yaml
-groups:
-  - name: instance-health
-    rules:
-      - alert: InstanceDown
-        expr: up == 0
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Instance {{ $labels.instance }} is down"
-          description: "The instance {{ $labels.instance }} has been unreachable for more than 2 minutes."
-```
-
----
 
 ## Reload or Restart Prometheus
 
@@ -168,49 +141,60 @@ groups:
 
 ### Check Prometheus UI
 
-Open Prometheus UI:
+- Open Prometheus UI:
 
-```
-http://<prometheus_ip>:9090
-```
+  ```
+  http://<prometheus_ip>:9090
+  ```
 
-Navigate to:
+- Navigate to:
 
-```
-Status → Alertmanagers
-```
+  ```
+  Status → Alertmanagers
+  ```
 
-**Expected Result:**
+- Expected Result:
 
-```
-Alertmanager
-  alertmanager:9093
-```
+  ```
+  Alertmanager
+    alertmanager:9093
+  ```
 
 ---
 
 ## Validate Alert Flow
 
+### Ensure Rule Files Are Loaded
+
+- Check example section in `prometheus.yml` file:
+
+  ```yaml
+  rule_files:
+    - "/etc/prometheus/alert-rules/*.yml"
+  ```
+
 ### Force a Test Alert
 
-Temporarily create a test rule:
+- Temporarily create a test rule:
 
-```yaml
-- alert: AlwaysFiringTest
-  expr: vector(1)
-  for: 10s
-  labels:
-    severity: warning
-  annotations:
-    summary: "Test alert"
-    description: "This is a test alert to verify Alertmanager integration."
-```
+  ```yaml
+  - alert: AlwaysFiringTest
+    expr: vector(1)
+    for: 10s
+    labels:
+      severity: warning
+    annotations:
+      summary: "Test alert"
+      description: "This is a test alert to verify Alertmanager integration."
+  ```
 
-Reload Prometheus and verify alert appears.
+- Reload Prometheus and verify alert navigate to:
 
----
+  ```
+  Alerts
+  ```
 
-## Verify Alert in Alertmanager
+### Verify Alert in Alertmanager
 
 - Access Alertmanager UI
 
@@ -224,11 +208,11 @@ Reload Prometheus and verify alert appears.
   Alerts
   ```
 
-**Expected Result:**
+  **Expected Result:**
 
-- Alert visible
-- Correct labels and annotations
-- Routed to the configured receiver
+  - Alert visible
+  - Correct labels and annotations
+  - Routed to the configured receiver
 
 ---
 
@@ -254,13 +238,6 @@ Reload Prometheus and verify alert appears.
   ```bash
   docker logs alertmanager
   ```
-
-#
-
-### Alerts Not Routed to Receiver
-
-- Review `route` and `receivers` section in `alertmanager.yml`
-- Confirm label matching logic
 
 ---
 
