@@ -75,12 +75,24 @@ This template:
 
 ---
 
-# 4. Modify alertmanager.yml
+## How It Looks in Teams
 
-Open:
+When firing:
+
+![Alert Firing Template](./template-images/template1-firing.png)
+
+When resolved:
+
+![Alert Firing Template](./template-images/template1-resolve.png)
+
+---
+
+## Modify alertmanager.yml
+
+Open alertmanager configuration file:
 
 ```bash
-vi /etc/alertmanager/alertmanager.yml
+vim /home/observer/container/alertmanager/alertmanager_config/alertmanager.yml
 ```
 
 Add template path at top level:
@@ -89,8 +101,10 @@ Add template path at top level:
 templates:
   - "/etc/alertmanager/templates/*.tmpl"
 ```
+>Note: This is refer to container inside directory
 
-Now configure receiver:
+
+Then configure receiver:
 
 ```yaml
 receivers:
@@ -103,14 +117,12 @@ receivers:
 ```
 
 Important:
-
-`'{{ template "teams.title" . }}'`
-
-`.` passes full alert context to template.
+- `'{{ template "teams.title" . }}'`
+- `.` passes full alert context to template.
 
 ---
 
-# 5. Restart or Reload Alertmanager
+## Restart or Reload Alertmanager
 
 If systemd:
 
@@ -121,53 +133,12 @@ systemctl restart alertmanager
 Or reload:
 
 ```bash
-curl -X POST http://localhost:9093/-/reload
+docker restart alertmanager
 ```
 
 ---
 
-# 6. How It Looks in Teams
-
-When firing:
-
-```
-🚨 [FIRING] InstanceDown
-Severity: critical
-Status: firing
-
-Instance: 10.220.16.161
-Job: windows-servers
-Summary: Instance 10.220.16.161 is down
-Description: The instance has been unreachable for 2 minutes.
-```
-
-When resolved:
-
-```
-✅ [RESOLVED] InstanceDown
-```
-
----
-
-# 7. If You Are Using group_by
-
-If your route contains:
-
-```yaml
-group_by: ["alertname", "instance"]
-```
-
-Then:
-
-• `.CommonLabels.alertname` is same
-• `.CommonLabels.instance` is same
-• `.Alerts` may contain multiple alerts
-
-This template handles that correctly.
-
----
-
-# 8. Validate Before Restart
+## Validate Before Restart
 
 Always check config:
 
@@ -179,21 +150,3 @@ If template syntax is wrong → Alertmanager will fail.
 
 ---
 
-# 9. Want More Advanced Version?
-
-If you want, I can give you:
-
-• Color-coded adaptive cards
-• Table-style structured message
-• Compact format for large alert volume
-• Special formatting for Windows server alerts
-
-Since you are running Windows server monitoring and grouping by instance, I can optimize template specifically for your environment.
-
-Tell me if you want:
-
-1. Simple clean
-2. Enterprise formatted
-3. Compact high-volume format
-
-I’ll prepare accordingly.
