@@ -33,7 +33,7 @@ wget --content-disposition "https://packagecloud.io/rabbitmq/erlang/packages/el/
 wget --content-disposition "https://packagecloud.io/rabbitmq/rabbitmq-server/packages/el/8/rabbitmq-server-3.9.27-1.el8.noarch.rpm/download.rpm?distro_version_id=205"
 ```
 
-**Then we can install using yum and dnf like this**
+**Then We can Install Using YUM and DNF Like This**
 
 ```bash
 yum install erlang-24.3.4.11-1.el8.x86_64.rpm
@@ -46,7 +46,7 @@ yum install rabbitmq-server-3.9.27-1.el8.noarch.rpm
 
 ---
 
-## Or We can Add RabbitMQ Official Repository
+## By Adding RabbitMQ Official Repository
 
 **We need:**
 
@@ -55,7 +55,7 @@ yum install rabbitmq-server-3.9.27-1.el8.noarch.rpm
 
 #
 
-**Import GPG keys:**
+**Import GPG keys for Two Repos:**
 
 ```bash
 rpm --import https://packagecloud.io/rabbitmq/erlang/gpgkey
@@ -79,11 +79,8 @@ sslverify=1
 EOF
 ```
 
-**If using EL 8 or 9 change:**
+> If using EL 8 or 9 change: `el/8 → el/9`
 
-```
-el/8 → el/9
-```
 
 #
 
@@ -129,7 +126,7 @@ yum install erlang-24.3.4.11
 erl -version
 ```
 
-Expected: `Erlang (SMP,ASYNC_THREADS) (BEAM) emulator version 13.1.5`
+**Expected:** `Erlang (SMP,ASYNC_THREADS) (BEAM) emulator version 13.1.5`
 
 
 ---
@@ -141,7 +138,7 @@ Expected: `Erlang (SMP,ASYNC_THREADS) (BEAM) emulator version 13.1.5`
 ```bash
 yum --showduplicates list rabbitmq-server
 ```
-Look for: `rabbitmq-server-3.9.27`
+**Look for:** `rabbitmq-server-3.9.27`
 
 **Then install:**
 
@@ -238,13 +235,13 @@ rabbitmq-plugins list | grep management
 - Port: 15672
 - Protocol: HTTP
 
-**Check:**
+**Check using below command:**
 
 ```
 ss -tulnp | grep 15672
 ```
 
-You should see it listening.
+> You should see it listening.
 
 #
 
@@ -268,9 +265,7 @@ firewall-cmd --reload
 
 > BUT: The guest user can ONLY login from localhost.
 
-If you are accessing from another **machine**
-
-**create a new **admin** user:**
+**If you are accessing from another machine create a new admin user:**
 
 ```bash
 rabbitmqctl add_user admin password
@@ -284,13 +279,13 @@ rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 
 ### If accessing locally
 
-From browser 
+**From browser **
 
 ```
 http://localhost:15672
 ```
 
-Default login:
+**Default login:**
   - user: guest
   - pass: guest
 >⚠️ Guest works only from localhost.
@@ -299,19 +294,19 @@ Default login:
 
 ### If accessing from another machine:
 
-From browser
+**From browser**
 
 ```
 http://192.168.1.41:15672
 ```
 
-Login using credential created earlier:
+**Login using credential created earlier:**
 - admin
 - password
 
 ---
 
-# 10. Important Directories (RPM Installation Layout)
+# Important Directories
 
 Since you're working on system-level understanding:
 
