@@ -242,7 +242,7 @@ rabbitmq-plugins list | grep management
 ss -tulnp | grep 15672
 ```
 
-> You should see it listening.
+**Output:** You should see it listening.
 
 #
 
@@ -264,7 +264,7 @@ firewall-cmd --reload
 - username: guest
 - password: guest
 
-> BUT: The guest user can ONLY login from localhost.
+**BUT:** The guest user can ONLY login from localhost.
 
 **If you are accessing from another machine create a new admin user:**
 
@@ -278,9 +278,9 @@ rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 
 ## Now Access web UI
 
-### If accessing locally
+### If Accessing the UI Locally
 
-**From browser **
+**From browser**
 
 ```
 http://localhost:15672
@@ -293,7 +293,7 @@ http://localhost:15672
 
 #
 
-### If accessing from another machine:
+### If Accessing from Another Machine:
 
 **From browser**
 
