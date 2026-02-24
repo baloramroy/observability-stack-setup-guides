@@ -229,7 +229,7 @@ rabbitmq-plugins list | grep management
 
 ## Firewall Configurations
 
-### Check if Port 15672 is Listening
+### Check if Management UI Port is Listening
 
 **RabbitMQ Web UI runs on:**
 
@@ -246,7 +246,7 @@ ss -tulnp | grep 15672
 
 #
 
-### Open Firewall
+### Open Firewall for the Listening Port
 
 **If you are using firewalld:**
 
