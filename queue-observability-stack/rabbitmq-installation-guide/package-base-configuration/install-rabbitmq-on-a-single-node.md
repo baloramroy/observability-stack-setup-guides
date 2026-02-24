@@ -42,7 +42,8 @@ yum install rabbitmq-server-3.9.27-1.el8.noarch.rpm
 **Notes:** 
 - This way we can download the exact version
 - Then using yum or dnf we will install the package and resolve dependencies by the package manager.
-- We will install `erlang` first then `rabbitmq-server`. 
+- We will install `erlang` first then `rabbitmq-server`.
+- If we follow this **installation** option then we can **skip add repository** step and continue from **Enable and Start RabbitMQ** step.
 
 ---
 
@@ -204,7 +205,7 @@ dnf versionlock add erlang
 
 ---
 
-## Enable Management Plugin
+## Enable Management UI Plugin
 
 **Login to your RabbitMQ server and run:**
 
