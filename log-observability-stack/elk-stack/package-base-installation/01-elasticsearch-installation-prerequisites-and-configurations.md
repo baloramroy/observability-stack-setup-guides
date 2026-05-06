@@ -124,7 +124,13 @@ Elasticsearch **will not work properly with swap**.
 
 ---
 
-### 2.5 Kernel & System Limits
+### 2.5 Increase virtual memory
+
+Think:
+- vm.max_map_count = how many "file-to-memory mappings" Linux allows
+
+On Linux, you can increase the limits of the `vm.max_map_count` parameter by following this step:
+#
 
 - Create config file:
 
@@ -135,13 +141,17 @@ Elasticsearch **will not work properly with swap**.
 - Add below line:
 
   ```text
+  # Recommended (Official Elasticsearch requirement)
   vm.max_map_count=262144
+
+  # Modern ES Value (Not needed for small setup)
+  vm.max_map_count=1048576 
   ```
 
 - Apply:
 
   ```bash
-  sysctl -p /etc/sysctl.d/99-elasticsearch.conf
+  sysctl --system
   ```
 
 - Verify:
@@ -150,9 +160,22 @@ Elasticsearch **will not work properly with swap**.
   sysctl vm.max_map_count
   ```
 
+  Expected:
+
+  ```text
+  vm.max_map_count = 262144
+  ```
+
 ---
 
 ### 2.6 File Descriptor Limits
+
+There are **3 different** ways of apply **file descriptor limits** in Linux. But remember,
+- If ES started from terminal like `./bin/elasticsearch` → uses `ulimit` or `limits.conf` to apply limit.
+- If started by systemd → uses systemd limits
+
+As a prerequites meetup, we setting **file descriptor limits** by using `limits.conf` option. So that if someone run elasticsearch from **shell** this limits get applied.
+#
 
 - Create and Edit below file:
 
@@ -163,6 +186,7 @@ Elasticsearch **will not work properly with swap**.
 - Add these lines:
 
   ```text
+  # Applies only when running Elasticsearch manually (not via systemd)
   elasticsearch soft nofile 65535
   elasticsearch hard nofile 65535
   elasticsearch soft nproc  4096
@@ -174,9 +198,14 @@ Elasticsearch **will not work properly with swap**.
   ```bash
   cat /proc/$(pidof java)/limits | grep "Max open files"
   ```
+
+**NOTE:**\
+This does NOT apply when **Elasticsearch** runs as a **systemd service**.
+We will configure **systemd limits** later.
+
 ---
 
-### Disable Transparent Huge Pages (THP)
+### 2.7 Disable Transparent Huge Pages (THP)
 
 This is **very important for Elasticsearch performance**.
 
@@ -238,8 +267,7 @@ Sounds good — but for Elasticsearch:
 
   [Service]
   Type=oneshot
-  ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
-  ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+  ExecStart=/usr/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag"
 
   [Install]
   WantedBy=multi-user.target
@@ -248,39 +276,53 @@ Sounds good — but for Elasticsearch:
 - Enable it:
 
   ```bash
-  systemctl daemon-reexec
+  systemctl daemon-reload
   systemctl enable disable-thp
   systemctl start disable-thp
   ```
 
 ---
 
-### Firewall Configuration
+## Firewall Configuration
 
-- Required Ports
+Required Ports
 
-  | Port | Purpose |
-  |----|--------|
-  | 22 | SSH |
-  | 9200 | ES HTTP |
-  | 9300 | ES Transport |
+| Port | Purpose |
+|----|--------|
+| 22 | SSH |
+| 9200 | ES HTTP |
+| 9300 | ES Transport |
 
-- Run bwlow comman to configure firewall:
-  ```bash
-  firewall-cmd --permanent --add-port=9200/tcp
-  firewall-cmd --permanent --add-port=9300/tcp
-  firewall-cmd --reload
-  ```
+Run bwlow comman to configure firewall:
+
+```bash
+firewall-cmd --permanent --add-port=9200/tcp
+firewall-cmd --permanent --add-port=9300/tcp
+firewall-cmd --reload
+```
 
 ---
 
-### Time Synchronization
+## Network Connectivity Check
+
+Check connectivity between dodes:
+```bash
+ping es-node-2
+nc -zv es-node-2 9300
+```
+
+ES cluster fails silently if network blocked
+
+## Time Synchronization
 
 ```bash
 timedatectl set-ntp true
 timedatectl status
 ```
-
+Why important:
+- Cluster coordination depends on time
+- Prevents split-brain / election issues
+  
 ---
 
 ## Final Pre-Flight Checklist
