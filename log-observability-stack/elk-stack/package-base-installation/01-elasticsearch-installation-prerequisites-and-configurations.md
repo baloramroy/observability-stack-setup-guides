@@ -2,17 +2,15 @@
 
 Before installing **Elasticsearch** on the host machine, we need to take care of **certain prerequisites** and **configurations**. Let's go through them one by one.
 
-#
-
 ## 1. Lab Design
 
 ### 1.1 VM Plan
 
-| VM  | Hostname  | IP (example)  | Role          |
-| --- | --------- | ------------- | ------------- |
-| VM1 | es-node-1 | 192.168.10.11 | Elasticsearch |
-| VM2 | es-node-2 | 192.168.10.12 | Elasticsearch |
-| VM3 | es-node-3 | 192.168.10.13 | Elasticsearch |
+| VM  | Hostname  | IP (example)  | Role                   |
+| --- | --------- | ------------- | ---------------------- |
+| VM1 | es-node-1 | 192.168.10.11 | Master + Data + Ingest |
+| VM2 | es-node-2 | 192.168.10.12 | Master + Data + Ingest |
+| VM3 | es-node-3 | 192.168.10.13 | Master + Data + Ingest |
 
 >Use **static IPs**. Elasticsearch hates changing IPs.
 
@@ -20,10 +18,10 @@ Before installing **Elasticsearch** on the host machine, we need to take care of
 
 ### 1.2 Minimum Resources (per ES node)
 
-• CPU: 2 vCPU
-• RAM: **4 GB minimum** (8 GB recommended)
-• Disk: 40 GB
-• Network: Same subnet
+-  CPU: 2 vCPU
+-  RAM: **4 GB minimum** (8 GB recommended)
+-  Disk: 40 GB
+-  Network: Same subnet
 
 ---
 
@@ -63,9 +61,11 @@ Do these steps **on ALL 3 nodes**.
 
 ### 2.2 Update System
 
-```bash
-dnf update -y
-```
+- This is not mandatory
+
+  ```bash
+  dnf update -y
+  ```
 
 ---
 
@@ -85,7 +85,7 @@ dnf update -y
   192.168.10.13  es-node-3
   ```
 
-Why?
+Why need hostname entry in the hostfile?
 - ES discovery uses hostnames
 - Prevents DNS issues
 - Faster cluster formation
@@ -191,84 +191,86 @@ Sounds good — but for Elasticsearch:
 - Unpredictable GC pauses
 - Memory fragmentation issues
 
-#
+
 
 **Check THP status:**
 
-Run this to check:
+- Run this to check:
 
-```bash
-cat /sys/kernel/mm/transparent_hugepage/enabled
-```
+  ```bash
+  cat /sys/kernel/mm/transparent_hugepage/enabled
+  ```
 
-If you see:
+- If you see:
 
-```text
-[always] madvise never
-```
+  ```text
+  [always] madvise never
+  ```
 
   → BAD (enabled)
 
 #
 
 **Disable THP (Temporary):**
-```bash
-echo never > /sys/kernel/mm/transparent_hugepage/enabled
-echo never > /sys/kernel/mm/transparent_hugepage/defrag
-```
+- Run Below Command:
+
+  ```bash
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  ```
 
 #
 
 **Disable THP (Permanent)**
 
-Create a systemd service:
+- Create a systemd service:
 
-```bash
-vim /etc/systemd/system/disable-thp.service
-```
+  ```bash
+  vim /etc/systemd/system/disable-thp.service
+  ```
 
-Add:
+- Add:
 
-```ini
-[Unit]
-Description=Disable Transparent Huge Pages
-After=network.target
+  ```ini
+  [Unit]
+  Description=Disable Transparent Huge Pages
+  After=network.target
 
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
-ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+  [Service]
+  Type=oneshot
+  ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+  ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
 
-[Install]
-WantedBy=multi-user.target
-```
+  [Install]
+  WantedBy=multi-user.target
+  ```
 
-Enable it:
+- Enable it:
 
-```bash
-systemctl daemon-reexec
-systemctl enable disable-thp
-systemctl start disable-thp
-```
+  ```bash
+  systemctl daemon-reexec
+  systemctl enable disable-thp
+  systemctl start disable-thp
+  ```
 
 ---
 
 ### Firewall Configuration
 
-**Required Ports**
+- Required Ports
 
-| Port | Purpose |
-|----|--------|
-| 22 | SSH |
-| 9200 | ES HTTP |
-| 9300 | ES Transport |
+  | Port | Purpose |
+  |----|--------|
+  | 22 | SSH |
+  | 9200 | ES HTTP |
+  | 9300 | ES Transport |
 
-Run bwlow comman to configure firewall:
-```bash
-firewall-cmd --permanent --add-port=9200/tcp
-firewall-cmd --permanent --add-port=9300/tcp
-firewall-cmd --reload
-```
+- Run bwlow comman to configure firewall:
+  ```bash
+  firewall-cmd --permanent --add-port=9200/tcp
+  firewall-cmd --permanent --add-port=9300/tcp
+  firewall-cmd --reload
+  ```
 
 ---
 
