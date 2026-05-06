@@ -1,173 +1,4 @@
-# Step 1: Elasticsearch 3-Node Cluster Installation
----
-
-## 1. Lab Design
-
-### 1.1 VM Plan
-
-| VM  | Hostname  | IP (example)  | Role          |
-| --- | --------- | ------------- | ------------- |
-| VM1 | es-node-1 | 192.168.10.11 | Elasticsearch |
-| VM2 | es-node-2 | 192.168.10.12 | Elasticsearch |
-| VM3 | es-node-3 | 192.168.10.13 | Elasticsearch |
-
-⚠ Use **static IPs**. Elasticsearch hates changing IPs.
-
----
-
-### 1.2 Minimum Resources (per ES node)
-
-• CPU: 2 vCPU
-• RAM: **4 GB minimum** (8 GB recommended)
-• Disk: 40 GB
-• Network: Same subnet
-
----
-
-## 2. OS-Level Preparation
-
-Do these steps **on ALL 3 nodes**.
-
-
-### 2.1 Set Hostname
-
-**On es-node-1**
-
-```bash
-hostnamectl set-hostname es-node-1
-```
-
-**On es-node-2**
-
-```bash
-hostnamectl set-hostname es-node-2
-```
-
-**On es-node-3**
-
-```bash
-hostnamectl set-hostname es-node-3
-```
-
-**Reboot all nodes:**
-
-```bash
-reboot
-```
-
----
-
-### 2.2 Update System
-
-```bash
-dnf update -y
-```
-
----
-
-### 2.3 Configure `/etc/hosts` (CRITICAL)
-
-Edit on **ALL nodes**:
-
-```bash
-vi /etc/hosts
-```
-
-Add hostname in system hosts file:
-
-```text
-192.168.10.11  es-node-1
-192.168.10.12  es-node-2
-192.168.10.13  es-node-3
-```
-
-Why?
-- ES discovery uses hostnames
-- Prevents DNS issues
-- Faster cluster formation
-
----
-
-### 2.4 Disable Swap (MANDATORY)
-
-Elasticsearch **will not work properly with swap**.
-
-```bash
-swapoff -a
-```
-
-Disable permanently:
-
-```bash
-vi /etc/fstab
-```
-
-Comment out swap line:
-
-```text
-# /dev/mapper/cs-swap swap swap defaults 0 0
-```
-
-Verify:
-
-```bash
-free -h
-```
-
-Swap must be `0`.
-
----
-
-### 2.5 Kernel & System Limits (VERY IMPORTANT)
-
-Create config file:
-
-```bash
-vi /etc/sysctl.d/99-elasticsearch.conf
-```
-
-Add:
-
-```text
-vm.max_map_count=262144
-```
-
-Apply:
-
-```bash
-sysctl -p /etc/sysctl.d/99-elasticsearch.conf
-```
-
-Verify:
-
-```bash
-sysctl vm.max_map_count
-```
-
----
-
-### 2.6 File Descriptor Limits
-
-Edit:
-
-```bash
-vi /etc/security/limits.conf
-```
-
-Add at bottom:
-
-```text
-elasticsearch soft nofile 65535
-elasticsearch hard nofile 65535
-elasticsearch soft nproc  4096
-elasticsearch hard nproc  4096
-```
-
----
-
 ## 3. Install Elasticsearch (All Nodes)
-
----
 
 ### 3.1 Import Elastic GPG Key
 
@@ -175,7 +6,7 @@ elasticsearch hard nproc  4096
 rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 ```
 
----
+#
 
 ### 3.2 Add Elasticsearch Repository
 
@@ -192,15 +23,29 @@ baseurl=https://artifacts.elastic.co/packages/8.x/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
-autorefresh=1
-type=rpm-md
+```
+Note:
+
+For Elasticsearch 9.x use below url:
+
+```bash
+baseurl=https://artifacts.elastic.co/packages/9.x/yum
 ```
 
----
+#
 
 ### 3.3 Install Elasticsearch
 
+To Check all Available Elasticsearch Version:
 ```bash
+dnf list --showduplicates elasticsearch
+#
+dnf info elasticsearch
+```
+Now install ES from the repo:
+```bash
+dnf clean all
+dnf makecache
 dnf install elasticsearch -y
 ```
 
