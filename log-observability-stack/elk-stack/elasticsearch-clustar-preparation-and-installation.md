@@ -10,11 +10,12 @@ rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
 ### 3.2 Add Elasticsearch Repository
 
+Create e repo file:
 ```bash
 vi /etc/yum.repos.d/elasticsearch.repo
 ```
 
-Add:
+Add these lines:
 
 ```ini
 [elasticsearch]
@@ -24,9 +25,10 @@ gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
 ```
-Note:
 
-For Elasticsearch 9.x use below url:
+> Note:
+
+For **Elasticsearch 9.x** installation, change the version name only:
 
 ```bash
 baseurl=https://artifacts.elastic.co/packages/9.x/yum
