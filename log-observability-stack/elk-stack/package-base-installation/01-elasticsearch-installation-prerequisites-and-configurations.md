@@ -126,10 +126,11 @@ Elasticsearch **will not work properly with swap**.
 
 ### 2.5 Increase virtual memory
 
-Think:
-- vm.max_map_count = how many "file-to-memory mappings" Linux allows
-
 On Linux, you can increase the limits of the `vm.max_map_count` parameter by following this step:
+
+Think:\
+**vm.max_map_count = how many "file-to-memory mappings" Linux allows**
+
 #
 
 - Create config file:
@@ -186,7 +187,6 @@ As a prerequites meetup, we setting **file descriptor limits** by using `limits.
 - Add these lines:
 
   ```text
-  # Applies only when running Elasticsearch manually (not via systemd)
   elasticsearch soft nofile 65535
   elasticsearch hard nofile 65535
   elasticsearch soft nproc  4096
