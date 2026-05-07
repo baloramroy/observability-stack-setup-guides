@@ -1,4 +1,4 @@
-# Elasticsearch Installation Prerequisites & Configurations
+# Elasticsearch Installation Prerequisites & System Configurations
 
 Before installing **Elasticsearch** on the host machine, we need to take care of **certain prerequisites** and **configurations**. Let's go through them one by one.
 
@@ -175,8 +175,9 @@ There are **3 different** ways of apply **file descriptor limits** in Linux. But
 - If ES started from terminal like `./bin/elasticsearch` → uses `ulimit` or `limits.conf` to apply limit.
 - If started by systemd → uses systemd limits
 
-As a prerequites meetup, we setting **file descriptor limits** by using `limits.conf` option. So that if someone run elasticsearch from **shell** this limits get applied.
-#
+As a prerequisites meetup, we are setting **file descriptor limits** by using `limits.conf` option. So that, if someone **run elasticsearch** from **shell** then this limits get applied.
+
+
 
 - Create and Edit below file:
 
@@ -201,7 +202,7 @@ As a prerequites meetup, we setting **file descriptor limits** by using `limits.
 
 **NOTE:**\
 This does NOT apply when **Elasticsearch** runs as a **systemd service**.
-We will configure **systemd limits** later.
+We will configure **systemd limits** later in this **[guide](03-elasticsearch-clustar-configuration-and-role-assignment.md)**.
 
 ---
 
@@ -220,7 +221,7 @@ Sounds good — but for Elasticsearch:
 - Unpredictable GC pauses
 - Memory fragmentation issues
 
-
+#
 
 **Check THP status:**
 
@@ -346,3 +347,6 @@ Why important:
 - **Time Synchronization** – `timedatectl status | grep -E "NTP service|System clock"`
 
 ---
+
+## Other Installation Guides:
+- Next: [Elasticsearch Installation Guide](02-elasticsearch-installation.md)
