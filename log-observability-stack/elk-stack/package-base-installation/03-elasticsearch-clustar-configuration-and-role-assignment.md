@@ -323,13 +323,13 @@ IMPORTANT:
 
 ## Configure Systemd Limits
 
-Earlier we configured:
+### Earlier we configured:
 
 ```bash
 /etc/security/limits.d/elasticsearch.conf
 ```
 
-But systemd ignores those [File Discriptor](package-base-installation/package-base-installation) limits as it is installed by package manager.
+But systemd ignores those [File Discriptor](01-elasticsearch-node-preparations.md) limits as it is installed by package manager.
 
 #
 
@@ -408,28 +408,12 @@ chown -R elasticsearch:elasticsearch /var/lib/elasticsearch
 chown -R elasticsearch:elasticsearch /var/log/elasticsearch
 ```
 
----
-
-
-## Firewall Configuration
-
-Open required ports on **ALL nodes**:
-
-```bash
-firewall-cmd --permanent --add-port=9200/tcp
-firewall-cmd --permanent --add-port=9300/tcp
-firewall-cmd --reload
-```
-
-Ports:
-- 9200 → REST API
-- 9300 → Cluster communication
 
 ---
 
 ## Start Elasticsearch Cluster
 
-### Enable Service
+### Enable ES Service
 
 ```bash
 systemctl daemon-reload
@@ -438,7 +422,7 @@ systemctl enable elasticsearch
 
 #
 
-### Start Elasticsearch Nodes - Order Matters First Time
+### Start ES Services - Order Matters First Time
 
 Start **one by one**, not all together.
 

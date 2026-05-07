@@ -56,5 +56,5 @@ dnf install elasticsearch -y
 ---
 
 ## Other Installation Guides:
-- Previous: [Elasticsearch Node Preparation Prerequisites](01-elasticsearch-node-pre-configurations.md)
+- Previous: [Elasticsearch Node Preparation Prerequisites](01-elasticsearch-node-preparations.md)
 - Next: [Elasticsearch Cluster Configuration & Role Assignment](03-elasticsearch-clustar-configuration-and-role-assignment.md)
