@@ -172,6 +172,8 @@ dnf install elasticsearch-8.17.3-x86_64.rpm -y
 
 ### Download and install the RPM in One Go:
 
+Replace <SPECIFIC.VERSION.NUMBER> with the Elasticsearch version number you want. For example, you can replace <SPECIFIC.VERSION.NUMBER> with 9.0.0.
+
 ```bash
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm.sha512
