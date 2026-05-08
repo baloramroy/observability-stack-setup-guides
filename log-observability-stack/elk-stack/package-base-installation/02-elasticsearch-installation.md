@@ -1,8 +1,8 @@
 # Install Elasticsearch using Package Manager
 
 You have **two options** for installing the **Elasticsearch RPM package**:
-1. [From the RPM Repository](#1-install-from-the-rpm-repository)
-2. [Manually Installation](#2-download-and-install-elasticsearch-rpm-manually)
+1. **[From the RPM Repository](#1-install-from-the-rpm-repository)**
+2. **[Manually Installation](#2-download-and-install-elasticsearch-rpm-manually)**
 
 #
 
