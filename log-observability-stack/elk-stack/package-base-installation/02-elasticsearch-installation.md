@@ -2,7 +2,7 @@
 
 You have **two options** for installing the **Elasticsearch RPM package**:
 1. [From the RPM Repository](#1-install-from-the-rpm-repository)
-2. [Manually Installation](#2-download-and-install-the-rpm-manually)
+2. [Manually Installation](#2-download-and-install-elasticsearch-rpm-manually)
 
 #
 
@@ -10,7 +10,7 @@ You have **two options** for installing the **Elasticsearch RPM package**:
 
 ### Import Elastic GPG Key
 
-Elasticsearch sign all of their packages with the Elasticsearch signing key with fingerprint:
+Elasticsearch signs all of their packages with the Elasticsearch signing key with fingerprint:
 
 ```bash
 4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
@@ -62,11 +62,11 @@ dnf list --showduplicates elasticsearch
 dnf info elasticsearch
 ```
 
-Now install ES from the repo:
+Now install Elasticsearch from the repository:
 
 ```bash
 dnf clean all
-dnf makecache
+dnf makecache --refresh
 dnf install elasticsearch -y
 ```
 
@@ -75,14 +75,14 @@ dnf install elasticsearch -y
 ---
 
 
-## 2. Download and Install the RPM Manually
+## 2. Download and Install Elasticsearch RPM Manually
 
 Manual installation is useful when:
 
-- Internet access is restricted
-- Installing in offline environments
-- Installing a specific Elasticsearch version
-- Maintaining controlled package deployment
+- **Internet access** is restricted
+- Installing in **offline** environments
+- Installing a **specific Elasticsearch** version
+- Maintaining **controlled package deployment**
 
 #
 
@@ -165,14 +165,14 @@ rpm -ivh elasticsearch-8.17.3-x86_64.rpm
 OR using DNF (recommended because it resolves dependencies automatically):
 
 ```bash
-dnf install elasticsearch-8.17.3-x86_64.rpm -y
+dnf install elasticsearch-8.17.3-x86_64.rpm
 ```
 
 #
 
 ### Download and install the RPM in One Go:
 
-Replace <SPECIFIC.VERSION.NUMBER> with the Elasticsearch version number you want. For example, you can replace <SPECIFIC.VERSION.NUMBER> with 9.0.0.
+Replace <SPECIFIC.VERSION.NUMBER> with the **Elasticsearch version number** you want. For example, you can replace <SPECIFIC.VERSION.NUMBER> with 9.0.0.
 
 ```bash
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
@@ -223,7 +223,8 @@ sudo rpm --install elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 
 ## Important Notes After Installation
 
-After installation:\
+**After installation:**
+
 i. Elasticsearch service files are created\
 ii. Elasticsearch user and group are automatically created
 
@@ -274,4 +275,4 @@ After all configurations are completed, then start Elasticsearch.
 
 ## Other Installation Guides:
 - Previous: [Elasticsearch Node Preparation Prerequisites](01-elasticsearch-node-preparations.md)
-- Next: [Elasticsearch Cluster Configuration & Role Assignment](03-elasticsearch-clustar-configuration-and-role-assignment.md)
+- Next: [Elasticsearch Cluster Configuration & Role Assignment](03-elasticsearch-cluster-configuration-and-role-assignment.md)
