@@ -1,11 +1,35 @@
-In this guide we will use native built in elasticsearch certificate generation tools.
+# Elasticsearch TLS Certificate Generation
 
-## Lab Envrionment
+## Scope of This SOP
 
-Elasticsearch Node Inoformation:
+This SOP focuses only on **Elasticsearch TLS certificate generation** using the native built-in **Elasticsearch certificate utility**.
 
-| Hostname | IP            |
-| -------- | ------------- |
+This document covers:
+
+* **Certificate Authority (CA)** generation
+* **Transport layer TLS** certificate generation
+* **HTTP layer TLS** certificate generation
+
+This document does **NOT** cover:
+
+* Elasticsearch TLS configuration
+* `elasticsearch.yml`
+* Cluster formation
+* Security configuration
+* Kibana integration
+* Logstash integration
+* Filebeat/Fleet/APM integration
+
+These topics will be covered in separate SOPs.
+
+---
+
+## Lab Environment
+
+### Elasticsearch Node Information
+
+| Hostname  | IP            |
+| --------- | ------------- |
 | es-node-1 | 192.168.10.11 |
 | es-node-2 | 192.168.10.12 |
 | es-node-3 | 192.168.10.13 |
@@ -16,155 +40,141 @@ Elasticsearch Node Inoformation:
 
 From Elasticsearch 8:
 
-* Security is enabled by default
-* TLS can be auto-generated
-* Built-in users exist
+* Security is **enabled by default**
+* TLS can be **auto-generated**
+* **Built-in users** exist
 
-But for LEARNING and REAL ADMINISTRATION, we should learn **MANUAL TLS configuration**.
-
-That is what we will do.
+However, for learning and real administration, it is important to understand **manual TLS certificate generation** and management.
 
 ---
 
-## Elasticsearch Certificate Tools
+## Elasticsearch Certificate Tool
 
-Elasticsearch provides:
+Elasticsearch provides the built-in certificate utility:
 
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-certutil
 ```
 
-This is the official certificate generation tool.
-
-You will use it for:
+This tool is used for:
 
 * CA generation
-* Node certificates
-* HTTP certificates
+* Transport TLS certificate generation
+* HTTP TLS certificate generation
 
 ---
 
-## Now Understand the Architecture
+## Elasticsearch TLS Architecture
 
-Elasticsearch uses **TWO different** network layers.
+Elasticsearch uses two separate network layers.
 
-1. Transport Layer (Node-to-Node Communication)
-2. HTTP Layer (Client-to-Elasticsearch)
 
-### Transport TLS and HTTP TLS are DIFFERENT
+### Transport Layer TLS
 
-| Type          | Used For       | Port |
-| ------------- | -------------- | ---- |
-| Transport TLS | Node-to-node   | 9300 |
-| HTTP TLS      | Client-to-node | 9200 |
+Used for secure **node-to-node communication**.
+
+| Type          | Used For                   | Port |
+| ------------- | -------------------------- | ---- |
+| Transport TLS | Node-to-node communication | 9300 |
+
+#
+
+### HTTP Layer TLS
+
+Used for secure **client/API communication**.
+
+| Type     | Used For                     | Port |
+| -------- | ---------------------------- | ---- |
+| HTTP TLS | Client-to-node communication | 9200 |
 
 ---
 
 ## Certificate Basics
 
-Before configuration, understand certificates properly.
-
-
 ### What is a Certificate?
 
-A certificate is an identity card.
+A certificate acts like a digital identity card.
 
 It proves:
 
-* "I am node1"
-* "I am trusted"
-* "I was signed by a trusted CA"
+* The identity of the node or service
+* The node/service is trusted
+* The certificate was signed by a trusted CA
 
+#
 
-### What is a CA (Certificate Authority)?
+## What is a CA (Certificate Authority)?
 
-* CA = Trusted signer.
-* The CA signs node certificates.
+A Certificate Authority (CA) is a trusted signer.
 
----
-
-## Recommended Configuration Order
-
-We will configure in this order:
-
-1. Create CA
-2. Create transport certificates
-3. Configure transport TLS
-4. Form secure cluster
-5. Create HTTP certificates
-6. Configure HTTPS
-7. Configure Kibana/Filebeat later
+The CA signs certificates for Elasticsearch nodes and services.
 
 ---
 
-## Directory Structure
+## Certificate Directory Structure
 
-Certificates Genration important paths:
+### Important Certificate Paths
 
-| Purpose                          | Path                                 |
-| -------------------------------- | ------------------------------------ |
-| Config                           | `/etc/elasticsearch/`                |
-| Root Certificate Directory       | `/etc/elasticsearch/certs/`          |
-| CA Certificates                  | `/etc/elasticsearch/certs/ca/`       |
-| Elasticsearch Node Certificates  | `/etc/elasticsearch/certs/node/`     |
-| HTTP Certificates                | `/etc/elasticsearch/certs/http/`     |
-| Kibana Certificates *(future)*   | `/etc/elasticsearch/certs/kibana/`   |
-| Logstash Certificates *(future)* | `/etc/elasticsearch/certs/logstash/` |
-| Filebeat Certificates *(future)* | `/etc/elasticsearch/certs/filebeat/` |
-| Fleet Certificates *(future)*    | `/etc/elasticsearch/certs/fleet/`    |
-| APM Certificates *(future)*      | `/etc/elasticsearch/certs/apm/`      |
+| Purpose                               | Path                                  |
+| ------------------------------------- | ------------------------------------- |
+| Elasticsearch Configuration Directory | `/etc/elasticsearch/`                 |
+| Root Certificate Directory            | `/etc/elasticsearch/certs/`           |
+| CA Certificates                       | `/etc/elasticsearch/certs/ca/`        |
+| Transport Layer Certificates          | `/etc/elasticsearch/certs/transport/` |
+| HTTP Layer Certificates               | `/etc/elasticsearch/certs/http/`      |
 
+#
 
-Directory Layout:
+### Directory Layout
 
 ```text
 /etc/elasticsearch/certs/
 ├── ca/
-├── node/
-├── http/
-├── kibana/
-├── logstash/
-├── filebeat/
-├── fleet/
-└── apm/
+├── transport/
+└── http/
 ```
 
 ---
 
-## PHASE 1 — Create Certificate Authority (CA)
+## Transport Layer TLS Certificate Generation
 
-You can create certificates:
+Transport TLS secures Elasticsearch **node-to-node communication** on port `9300`.
 
-* on es-node-1
-* or separate admin machine
 
-Recommended: Use es-node-1.
+### Create Certificate Directories
 
-#
-
-### Step 1: Create Certificate Directory
-
-On node1:
+Run on `es-node-1`:
 
 ```bash
-mkdir -p /etc/elasticsearch/certs
+mkdir -p /etc/elasticsearch/certs/{ca,transport,http}
 ```
 
-Set ownership:
+Set Ownership
 
 ```bash
 chown -R elasticsearch:elasticsearch /etc/elasticsearch/certs
 ```
 
-Set permission:
+Set Permissions
 
 ```bash
-chmod 750 /etc/elasticsearch/certs
+chmod -R 750 /etc/elasticsearch/certs
 ```
 
 #
 
-### Step 2: Generate CA
+### Create Certificate Authority (CA)
+
+The CA will be used to sign Elasticsearch certificates.
+
+Recommended location:
+
+* `es-node-1`
+* or a dedicated administration machine
+
+#
+
+**Step 1 — Generate CA**
 
 Run:
 
@@ -172,27 +182,22 @@ Run:
 /usr/share/elasticsearch/bin/elasticsearch-certutil ca
 ```
 
-You will see:
+**Step 2 — Output File**
+
+When prompted:
 
 ```text
 Please enter the desired output file
 ```
 
-Press ENTER.
-
-Default:
+Enter:
 
 ```text
-elastic-stack-ca.p12
+/etc/elasticsearch/certs/ca/elastic-stack-ca.p12
 ```
 
-Then:
 
-```text
-Enter password for CA
-```
-
-Choose strong password.
+**Step 3 — Set CA Password**
 
 Example:
 
@@ -200,46 +205,26 @@ Example:
 ElasticCA@123
 ```
 
+Use a strong password in production environments.
+
 #
 
-### What Was Created?
+### Generated CA File
 
-A file:
+Generated file:
 
 ```bash
-elastic-stack-ca.p12
+/etc/elasticsearch/certs/ca/elastic-stack-ca.p12
 ```
 
-This contains:
+This **PKCS#12** file contains:
 
 * CA certificate
 * CA private key
 
-#
-
-### Move CA File
-
-Move it:
-
-```bash
-mv elastic-stack-ca.p12 /etc/elasticsearch/certs/
-```
-
-Set permission:
-
-```bash
-chown elasticsearch:elasticsearch /etc/elasticsearch/certs/elastic-stack-ca.p12
-```
-
 ---
 
-## PHASE 2 — Generate Transport Certificates
-
-Now we create certificates for:
-
-* es-node-1
-* es-node-2
-* es-node-3
+## Generate Transport Layer Certificates
 
 These certificates secure:
 
@@ -249,25 +234,27 @@ These certificates secure:
 
 #
 
-### Method Choices
-
-There are 2 methods:
+### Certificate Generation Methods
 
 | Method                        | Description              |
 | ----------------------------- | ------------------------ |
-| One certificate for all nodes | Easier lab               |
+| One certificate for all nodes | Easier for labs          |
 | Separate certificate per node | Production best practice |
 
-we will use: **One certificate for all nodes**
+This SOP uses:
+
+```text
+One certificate for all nodes
+```
 
 #
 
-### Step 1: Create instances.yml
+### Step 1 — Create instances.yml
 
 Create file:
 
 ```bash
-vim /etc/elasticsearch/certs/instances.yml
+vim /etc/elasticsearch/certs/transport/instances.yml
 ```
 
 Content:
@@ -293,133 +280,134 @@ instances:
       - 192.168.10.13
 ```
 
-#
 
-### Why This File?
+### Why instances.yml is Required
 
-This defines:
+This file defines:
 
-* certificate names
-* hostnames
+* Certificate names
+* DNS names
 * IP addresses
 
 These become:
 
 * SANs (Subject Alternative Names)
 
+inside the certificates.
 
 #
 
-### Step 2: Generate Node Certificates
+### Step 2 — Generate Transport Certificates
 
-Run:
+**Run:**
 
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-certutil cert \
---ca /etc/elasticsearch/certs/elastic-stack-ca.p12 \
---in /etc/elasticsearch/certs/instances.yml \
---out /etc/elasticsearch/certs/elastic-certificates.p12
+--ca /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
+--in /etc/elasticsearch/certs/transport/instances.yml \
+--out /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12
 ```
 
-It asks:
 
-```text
-Enter password for CA
-```
+**Provide Passwords**
 
-Provide CA password.
+You will be prompted for:
 
-Then asks:
+- CA Password
 
-```text
-Enter password for elastic-certificates.p12
-```
+  Example:
 
-Choose password.
+  ```text
+  ElasticCA@123
+  ```
 
-Example:
+- Transport Certificate Password
 
-```text
-ElasticNode@123
-```
+  Example:
+
+  ```text
+  ElasticTransport@123
+  ```
 
 #
 
-### What Was Created?
+## Generated Transport Certificate File
+
+Generated file:
 
 ```bash
-elastic-certificates.p12
+/etc/elasticsearch/certs/transport/elastic-transport-certificates.p12
 ```
 
-Contains:
+This **PKCS#12** keystore contains:
 
-* node certificates
-* private keys
-* CA cert
-
-#
-
-### Important Learning Point
-
-This `.p12` is a PKCS#12 keystore.
-
-It bundles:
-
-* certificates
-* private keys
-* CA chain
-
-into one encrypted file.
+* Node certificates
+* Private keys
+* CA certificate chain
 
 ---
 
-## PHASE 3 — Distribute Certificates
+## Distribute Transport Certificates
 
-### Copy the certificate file to ALL nodes.
+Copy certificates to all Elasticsearch nodes.
 
-On node1:
+
+### Copy Transport Certificate
+
+From `es-node-1`:
 
 ```bash
-scp /etc/elasticsearch/certs/elastic-certificates.p12 root@192.168.10.12:/etc/elasticsearch/certs/
+scp /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12 \
+root@192.168.10.12:/etc/elasticsearch/certs/transport/
 ```
 
 ```bash
-scp /etc/elasticsearch/certs/elastic-certificates.p12 root@192.168.10.13:/etc/elasticsearch/certs/
+scp /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12 \
+root@192.168.10.13:/etc/elasticsearch/certs/transport/
 ```
-
-Also copy:
-
-```bash
-elastic-stack-ca.p12
-```
-
->optional but recommended
 
 #
 
-### Set Permissions on ALL Nodes
+### Copy CA Certificate
 
-On every node:
+Recommended:
 
 ```bash
-chown elasticsearch:elasticsearch /etc/elasticsearch/certs/*
+scp /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
+root@192.168.10.12:/etc/elasticsearch/certs/ca/
 ```
 
 ```bash
-chmod 640 /etc/elasticsearch/certs/*
+scp /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
+root@192.168.10.13:/etc/elasticsearch/certs/ca/
 ```
 
 ---
 
-## PHASE 4 — Configure HTTP TLS
+## Set Certificate Permissions
 
-This secures:
+Run on all Elasticsearch nodes.
 
-```text
-9200 HTTPS API
+
+### Set Ownership
+
+```bash
+chown -R elasticsearch:elasticsearch /etc/elasticsearch/certs
 ```
 
-#
+
+### Set Permissions
+
+```bash
+chmod -R 640 /etc/elasticsearch/certs/*
+```
+
+---
+
+## HTTP Layer TLS Certificate Generation
+
+HTTP TLS secures **Elasticsearch API communication** on port `9200`.
+
 
 ### Generate HTTP Certificates
 
@@ -429,99 +417,177 @@ Run:
 /usr/share/elasticsearch/bin/elasticsearch-certutil http
 ```
 
-This is interactive.
+This command starts an interactive wizard.
 
 #
 
-### Answers During Wizard
+### HTTP Certificate Wizard Answers
 
-Choose carefully:
+**Generate CSR?**
 
+- Choose:
 
-Generate CSR?
+  ```text
+  n
+  ```
 
-```text
-n
-```
+- Reason:
 
-Reason:
-We use our own CA.
+  ```text
+  We are using our own internal CA.
+  ```
+#
 
+**Use Existing CA?**
 
+- Choose:
 
-Use Existing CA?
+  ```text
+  y
+  ```
 
-```text
-y
-```
+#
 
-CA Path
+**Enter CA Path**
 
-```text
-/etc/elasticsearch/certs/elastic-stack-ca.p12
-```
+- Paste
 
+  ```text
+  /etc/elasticsearch/certs/ca/elastic-stack-ca.p12
+  ```
 
-Enter CA Password
+#
 
-```text
-Provide CA password.
-```
+**Enter CA Password**
 
-Validity
+- Provide the CA password.
 
-Example:
+  Example:
 
-```text
-3650D
-```
+  ```text
+  ElasticCA@123
+  ```
 
-10 years.
+#
 
+**Certificate Validity**
 
-One certificate per node?
+- Example:
 
-```text
-y
-```
+  ```text
+  3650D
+  ```
 
-Enter node names and IPs
+- This means:
 
-Same as earlier:
+  ```text
+  10 years
+  ```
+
+#
+
+**One Certificate Per Node?**
+
+- Choose:
+
+  ```text
+  y
+  ```
+
+#
+
+**Enter Node Information**
+
+Provide:
 
 * es-node-1
 * es-node-2
 * es-node-3
 
-#
+along with their IP addresses.
 
-### Output
+---
 
-Creates:
+## Generated HTTP Certificate Package
+
+Generated file:
 
 ```bash
 elasticsearch-ssl-http.zip
 ```
 
-Extract:
+Extract HTTP Certificate Package
 
 ```bash
 unzip elasticsearch-ssl-http.zip
 ```
 
-You will get:
+The archive contains:
 
-* http.p12
-* sample configs
+  * HTTP certificates
+  * PKCS#12 keystores
+  * Sample configuration files
 
-#
 
-### Copy HTTP Certificates
+After extraction, Elasticsearch creates node-specific HTTP certificates.
+```
+/elasticsearch/
+├── es-node-1/
+│   └── http.p12
+├── es-node-2/
+│   └── http.p12
+└── es-node-3/
+    └── http.p12
+```
 
-Place appropriate file on each node:
+---
+
+## Copy HTTP Certificates
+
+Place appropriate HTTP certificate files into:
+
+```bash
+/etc/elasticsearch/certs/http/
+```
 
 Example:
 
 ```bash
-/etc/elasticsearch/certs/http.p12
+/etc/elasticsearch/certs/http/http.p12
 ```
+
+---
+
+## Important Difference
+
+### Transport TLS
+You used:
+```
+One certificate for all nodes
+```
+
+So:
+- same .p12 file
+- goes to every node.
+
+### HTTP TLS
+You selected:
+```
+One certificate per node = YES
+```
+
+So:
+- each node gets different http.p12
+
+
+---
+
+## Summary
+
+This SOP covered:
+
+* CA generation
+* Transport layer TLS certificate generation
+* HTTP layer TLS certificate generation
+
+TLS **configuration** and Elasticsearch **security integration** will be covered in separate SOPs.
