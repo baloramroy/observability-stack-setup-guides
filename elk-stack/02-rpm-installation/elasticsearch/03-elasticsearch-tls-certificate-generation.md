@@ -217,11 +217,24 @@ Generated file:
 /etc/elasticsearch/certs/ca/elastic-stack-ca.p12
 ```
 
-This **PKCS#12** file contains:
+This `PKCS#12 (.p12)` files are encrypted containers that may include:
+- certificates
+- private keys
+- CA chains
 
-* CA certificate
-* CA private key
+> The generated CA becomes the **root trust authority** for the Elasticsearch environment.
 
+#
+
+### Backup CA Certificate
+
+Backup CA files securely.
+- Losing the CA private key may **prevent future certificate generation or renewal**.
+
+Production CA private keys should ideally be stored:
+- offline
+- encrypted
+- access-controlled
 ---
 
 ## Generate Transport Layer Certificates
@@ -291,9 +304,12 @@ This file defines:
 
 These become:
 
-* SANs (Subject Alternative Names)
+* **SANs (Subject Alternative Names)** - inside the certificates.
+* **Modern TLS** validation checks **SAN entries** instead of **Common Name (CN)**.
 
-inside the certificates.
+If node IPs or DNS names are missing from SANs:
+- TLS validation fails
+- nodes cannot trust each other
 
 #
 
@@ -382,6 +398,13 @@ scp /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
 root@192.168.10.13:/etc/elasticsearch/certs/ca/
 ```
 
+For lab environments, copying the `CA PKCS#12` file is acceptable.
+
+In production:
+- keep CA private keys secured
+- distribute only required trust certificates
+- avoid exposing CA signing keys to cluster nodes
+
 ---
 
 ## Set Certificate Permissions
@@ -399,7 +422,8 @@ chown -R elasticsearch:elasticsearch /etc/elasticsearch/certs
 ### Set Permissions
 
 ```bash
-chmod -R 640 /etc/elasticsearch/certs/*
+find /etc/elasticsearch/certs -type d -exec chmod 750 {} \;
+find /etc/elasticsearch/certs -type f -exec chmod 640 {} \;
 ```
 
 ---
@@ -529,7 +553,7 @@ The archive contains:
   * Sample configuration files
 
 
-After extraction, Elasticsearch creates node-specific HTTP certificates.
+After extraction, copy each node's `http.p12` file to its **corresponding Elasticsearch node.**
 ```
 /elasticsearch/
 ├── es-node-1/
@@ -579,6 +603,13 @@ One certificate per node = YES
 So:
 - each node gets different http.p12
 
+---
+
+## Certificate Renewal
+
+The certificates we have generated:
+- Eventually expire and require renewal.
+- Renewal procedures should be planned before certificate expiration dates.
 
 ---
 
@@ -591,3 +622,9 @@ This SOP covered:
 * HTTP layer TLS certificate generation
 
 TLS **configuration** and Elasticsearch **security integration** will be covered in separate SOPs.
+
+---
+
+## Other Installation Guides:
+- Previous: [Elasticsearch Installation Guide](02-elasticsearch-installation.md)
+- Next: [Elasticsearch Post Configuration and Cluster Validation](04-elasticsearch-post-configuration-and-cluster-validation.md)

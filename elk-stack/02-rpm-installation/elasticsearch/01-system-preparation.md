@@ -12,16 +12,19 @@ Before installing **Elasticsearch** on the host machine, we need to take care of
 | VM2 | es-node-2 | 192.168.10.12 | Master + Data + Ingest |
 | VM3 | es-node-3 | 192.168.10.13 | Master + Data + Ingest |
 
->Use **static IPs**. Elasticsearch hates changing IPs.
+> Use static IPs. Elasticsearch cluster discovery becomes unreliable if node IPs change frequently.
 
 #
 
 ### 1.2 Minimum Resources (per ES node)
 
--  CPU: 2 vCPU
--  RAM: **4 GB minimum** (8 GB recommended)
--  Disk: 40 GB
--  Network: Same subnet
+- CPU: 2 vCPU
+- RAM:  
+  - 4 GB minimum for lab
+  - 8 GB recommended
+  - 50% of RAM usually allocated to JVM heap
+- Disk: 40 GB
+- Network: Same subnet
 
 ---
 
@@ -85,7 +88,7 @@ Do these steps **on ALL 3 nodes**.
   192.168.10.13  es-node-3
   ```
 
-Why need hostname entry in the hostfile?
+Why need hostname entries in the hosts file?
 - ES discovery uses hostnames
 - Prevents DNS issues
 - Faster cluster formation
@@ -94,7 +97,7 @@ Why need hostname entry in the hostfile?
 
 ### 2.4 Disable Swap (MANDATORY)
 
-Elasticsearch **will not work properly with swap**.
+Elasticsearch performance **degrades** heavily when **swap is used** because **JVM memory pages** may move from **RAM to disk**.
 
 - Disable swap on runtime
 
@@ -142,12 +145,9 @@ Think:\
 - Add below line:
 
   ```text
-  # Recommended (Official Elasticsearch requirement)
-  vm.max_map_count=262144
-
-  # Modern ES Value (Not needed for small setup)
-  vm.max_map_count=1048576 
+  vm.max_map_count=262144 
   ```
+  >Larger environments with very** high shard** counts may require **higher values**.
 
 - Apply:
 
@@ -167,17 +167,12 @@ Think:\
   vm.max_map_count = 262144
   ```
 
+
 ---
 
 ### 2.6 File Descriptor Limits
 
-There are **3 different** ways of apply **file descriptor limits** in Linux. But remember,
-- If ES started from terminal like `./bin/elasticsearch` → uses `ulimit` or `limits.conf` to apply limit.
-- If started by systemd → uses systemd limits
-
-As a prerequisites meetup, we are setting **file descriptor limits** by using `limits.conf` option. So that, if someone **run elasticsearch** from **shell** then this limits get applied.
-
-
+As a prerequisites setup, we are setting **file descriptor limits** by using `limits.conf` option. So that, if someone **run elasticsearch** from **shell** then this limits get applied.
 
 - Create and Edit below file:
 
@@ -197,12 +192,14 @@ As a prerequisites meetup, we are setting **file descriptor limits** by using `l
 - After starting ES check this:
 
   ```bash
-  cat /proc/$(pidof java)/limits | grep "Max open files"
+  cat /proc/<ES_PID>/limits | grep "Max open files"
   ```
 
-**NOTE:**\
-This does NOT apply when **Elasticsearch** runs as a **systemd service**.
-We will configure **systemd limits** later in this **[guide](03-elasticsearch-clustar-configuration-and-role-assignment.md)**.
+**NOTE:**
+
+- This does NOT apply when **Elasticsearch** runs as a **systemd service**. 
+- **RPM installations** normally run Elasticsearch through **systemd**.
+- We will configure **systemd limits** later in this **[guide](04-elasticsearch-cluster-configuration.md#configure-systemd-limits)**.
 
 ---
 
@@ -290,11 +287,10 @@ Required Ports
 
 | Port | Purpose |
 |----|--------|
-| 22 | SSH |
 | 9200 | ES HTTP |
 | 9300 | ES Transport |
 
-Run bwlow comman to configure firewall:
+Run below command to configure firewall:
 
 ```bash
 firewall-cmd --permanent --add-port=9200/tcp
@@ -306,7 +302,7 @@ firewall-cmd --reload
 
 ## Network Connectivity Check
 
-Check connectivity between dodes:
+Check connectivity between nodes:
 ```bash
 ping es-node-2
 nc -zv es-node-2 9300
@@ -320,10 +316,31 @@ ES cluster fails silently if network blocked
 timedatectl set-ntp true
 timedatectl status
 ```
-Why important:
-- Cluster coordination depends on time
-- Prevents split-brain / election issues
-  
+Accurate time synchronization helps with:
+- log correlation
+- troubleshooting
+- cluster event analysis
+- certificate validation
+
+---
+
+## SELinux
+
+- Elasticsearch works with **SELinux in enforcing** mode in most modern installations.
+
+  `Do NOT disable SELinux unless troubleshooting requires it.`
+
+- Check status:
+  ```bash
+  getenforce
+  ```
+---
+
+## Java Installation
+
+- Modern Elasticsearch RPM packages already include **OpenJDK**.
+- Manual Java installation is usually not **required**.
+
 ---
 
 ## Final Pre-Flight Checklist

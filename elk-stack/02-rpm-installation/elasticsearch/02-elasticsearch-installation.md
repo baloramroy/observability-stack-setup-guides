@@ -1,8 +1,20 @@
 # Install Elasticsearch using Package Manager
 
+## Supported OS
+
+This guide is intended for:
+- RHEL 8/9
+- Rocky Linux 8/9
+- AlmaLinux 8/9
+- CentOS Stream 8/9
+
+---
+
+## Installation Options
+
 You have **two options** for installing the **Elasticsearch RPM package**:
 1. **[From the RPM Repository](#1-install-from-the-rpm-repository)**
-2. **[Manually Installation](#2-download-and-install-elasticsearch-rpm-manually)**
+2. **[Manual Installation](#2-download-and-install-elasticsearch-rpm-manually)**
 
 #
 
@@ -13,6 +25,7 @@ You have **two options** for installing the **Elasticsearch RPM package**:
 Elasticsearch signs all of their packages with the Elasticsearch signing key with fingerprint:
 
 ```bash
+Fingerprint:
 4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
 ```
 
@@ -40,15 +53,22 @@ baseurl=https://artifacts.elastic.co/packages/8.x/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
+type=rpm-md
 ```
 
-> Note:
+Varify Repository:
+```bash
+dnf repolist | grep elasticsearch
+```
+
+**Note:**
 
 For **Elasticsearch 9.x** installation, change the version name only:
 
 ```bash
 baseurl=https://artifacts.elastic.co/packages/9.x/yum
 ```
+
 
 #
 
@@ -67,7 +87,7 @@ Now install Elasticsearch from the repository:
 ```bash
 dnf clean all
 dnf makecache --refresh
-dnf install elasticsearch -y
+dnf install elasticsearch-8.17.3 -y
 ```
 
 ⚠ Do NOT start it yet.
@@ -88,7 +108,7 @@ Manual installation is useful when:
 
 ### Download Elasticsearch RPM Package
 
-Download the Elasticsearch RPM package:
+Download a specific Elasticsearch RPM package version:
 
 ```bash
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
@@ -170,14 +190,14 @@ dnf install elasticsearch-8.17.3-x86_64.rpm
 
 #
 
-### Download and install the RPM in One Go:
+### Download and Install the RPM in One Step:
 
 Replace <SPECIFIC.VERSION.NUMBER> with the **Elasticsearch version number** you want. For example, you can replace <SPECIFIC.VERSION.NUMBER> with 9.0.0.
 
 ```bash
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm.sha512
-shasum -a 512 -c elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm.sha512
+sha512sum -c elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm.sha512
 sudo rpm --install elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 ```
 
@@ -205,6 +225,15 @@ sudo rpm --install elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 
 ---
 
+## Verify Installed Elasticsearch Sevice
+
+- Service Verification
+  ```bash
+  systemctl status elasticsearch
+  ```
+
+---
+
 ## Verify Installed Elasticsearch Version
 
 - Check the installed Elasticsearch version:
@@ -223,11 +252,9 @@ sudo rpm --install elasticsearch-<SPECIFIC.VERSION.NUMBER>-x86_64.rpm
 
 ## Important Notes After Installation
 
-**After installation:**
+After installation:
 
-i. Elasticsearch service files are created\
-ii. Elasticsearch user and group are automatically created
-
+**i. Elasticsearch service files are created**
 
 - Default configuration directory becomes:
 
@@ -253,6 +280,18 @@ ii. Elasticsearch user and group are automatically created
   /usr/lib/systemd/system/elasticsearch.service
   ```
 
+**ii. Elasticsearch user and group are automatically created**
+
+- Vary User and Group
+
+  ```bash
+  id elasticsearch
+  ```
+
+- Expected:
+  - elasticsearch user
+  - elasticsearch group
+
 ---
 
 ## Do NOT Start Elasticsearch Yet
@@ -273,6 +312,22 @@ After all configurations are completed, then start Elasticsearch.
 
 ---
 
+## Upgrade Warning
+
+Very important for future readers.
+
+```
+WARNING:
+Do not upgrade Elasticsearch nodes randomly in a production cluster.
+```
+
+Always follow:
+- compatibility matrix
+- rolling upgrade procedures
+- snapshot backup practices
+
+---
+
 ## Other Installation Guides:
-- Previous: [Elasticsearch Node Preparation Prerequisites](01-elasticsearch-node-preparations.md)
-- Next: [Elasticsearch Cluster Configuration & Role Assignment](03-elasticsearch-cluster-configuration-and-role-assignment.md)
+- Previous: [Elasticsearch Node Preparation](01-system-preparation.md)
+- Next: [Elasticsearch TLS Certificate Generation](03-elasticsearch-tls-certificate-generation.md)
