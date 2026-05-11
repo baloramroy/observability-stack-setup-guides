@@ -79,11 +79,11 @@ This template:
 
 When firing:
 
-![Alert Firing Template](/observability-stack-setup-guides/metrics-observability-stack/Images/alermanager/template-images/template1-firing.png)
+![Alert Firing Template](/metrics-observability-stack/images/alertmanager/template-images/template1-firing.png)
 
 When resolved:
 
-![Alert Firing Template](/observability-stack-setup-guides//metrics-observability-stack/Images/alermanager/template-images/template1-resolve.png)
+![Alert Firing Template](/metrics-observability-stack/images/alertmanager/template-images/template1-resolve.png)
 
 ---
 
