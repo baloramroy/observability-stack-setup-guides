@@ -1,6 +1,6 @@
 # Uptime Kuma – Ping Monitor Configuration SOP
 
-## Purpose
+## Objective
 
 This SOP explains how to create a **Ping Monitor** in Uptime Kuma using a practical production-style example.
 
@@ -29,7 +29,7 @@ Monitor a production application gateway server:
 
 Login to Uptime Kuma dashboard.
 
-Click:
+**Click:**
 
 ```text
 Add New Monitor
@@ -41,13 +41,13 @@ Add New Monitor
 
 ### Field: Monitor Type
 
-Value to Select
+**Value to Select**
 
 ```text
 Ping
 ```
 
-Description
+**Description**
 
 Checks whether the target server or device is reachable using ICMP ping.
 
@@ -57,13 +57,13 @@ Checks whether the target server or device is reachable using ICMP ping.
 
 ### Field: Friendly Name
 
-Example Value
+**Example Value**
 
 ```text
 DC3-DMZ-APP01_10.10.10.11
 ```
 
-Description
+**Description**
 
 Human-readable monitor name shown in the dashboard.
 
@@ -71,13 +71,13 @@ Human-readable monitor name shown in the dashboard.
 
 ### Field: Hostname
 
-Example Value
+**Example Value**
 
 ```text
 10.10.10.11
 ```
 
-Description
+**Description**
 
 Target server IP address or DNS hostname to ping.
 
@@ -87,7 +87,7 @@ Target server IP address or DNS hostname to ping.
 
 ### Field: Heartbeat Interval
 
-Example Value
+**Example Value**
 
 ```text
 60
@@ -95,7 +95,7 @@ Example Value
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Defines how often the ping check runs.
 
@@ -103,13 +103,13 @@ Defines how often the ping check runs.
 
 ### Field: Retries
 
-Example Value
+**Example Value**
 
 ```text
 3
 ```
 
-Description
+**Description**
 
 Monitor will be marked DOWN only after 3 consecutive failed checks.
 
@@ -117,7 +117,7 @@ Monitor will be marked DOWN only after 3 consecutive failed checks.
 
 ### Field: Heartbeat Retry Interval
 
-### Example Value
+**Example Value**
 
 ```text
 60
@@ -125,7 +125,7 @@ Monitor will be marked DOWN only after 3 consecutive failed checks.
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Wait time between retry attempts after a failed check.
 
@@ -133,7 +133,7 @@ Wait time between retry attempts after a failed check.
 
 ### Field: Global Timeout
 
-Example Value
+**Example Value**
 
 ```text
 10
@@ -141,7 +141,7 @@ Example Value
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Maximum time allowed for the **entire ping proces**s before marking the check as failed.
 
@@ -151,13 +151,13 @@ Maximum time allowed for the **entire ping proces**s before marking the check as
 
 ### Field: Max Packets
 
-Example Value
+**Example Value**
 
 ```text
 3
 ```
 
-Description
+**Description**
 
 Number of ICMP packets sent during each health check.
 
@@ -165,7 +165,7 @@ Number of ICMP packets sent during each health check.
 
 ### Field: Packet Size
 
-Example Value
+**Example Value**
 
 ```text
 56
@@ -173,7 +173,7 @@ Example Value
 
 >(Unit: bytes)
 
-Description
+**Description**
 
 Defines the ICMP payload size used during ping checks.
 
@@ -181,7 +181,7 @@ Defines the ICMP payload size used during ping checks.
 
 ### Field: Per-Ping Timeout
 
-Example Value
+**Example Value**
 
 ```text
 2
@@ -189,7 +189,7 @@ Example Value
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Maximum wait time for each individual ping packet reply.
 
@@ -197,13 +197,13 @@ Maximum wait time for each individual ping packet reply.
 
 ### Field: Numeric Output
 
-Example Value
+**Example Value**
 
 ```text
 Enabled
 ```
 
-Description
+**Description**
 
 Displays **IP address** instead of **resolved hostname** in monitor output.
 
@@ -213,13 +213,13 @@ Displays **IP address** instead of **resolved hostname** in monitor output.
 
 ### Field: Monitor Group
 
-Example Value
+**Example Value**
 
 ```text
 Production-DMZ
 ```
 
-Description
+**Description**
 
 Logical grouping for easier dashboard organization.
 
@@ -227,7 +227,7 @@ Logical grouping for easier dashboard organization.
 
 ### Field: Description
 
-Example Value
+**Example Value**
 
 ```text
 Production application gateway server handling external traffic routing.
@@ -239,13 +239,13 @@ Production application gateway server handling external traffic routing.
 
 ### Field: Set Up Notification
 
-Example Value
+**Example Value**
 
 ```text
 Microsoft-Teams-Infra-Alert
 ```
 
-Description
+**Description**
 
 Defines where alert notifications will be sent.
 
@@ -255,22 +255,22 @@ N.B: [Notification and Webhook Setup Guide](microsoft-teams-webhook-integration-
 
 ### Field: Resend Notification if Down X Times
 
-Example Value
+**Example Value**
 
 ```text
 3
 ```
 
-Description
+**Description**
 
 - Resends alert after every 3 failed checks while the monitor remains DOWN.
-- But in our setup we are keeping this value 0.
+- But in our setup we are keeping this **value 0**.
 
 ---
 
 ## 8. Save Monitor
 
-Click:
+**Click:**
 
 ```text
 Save

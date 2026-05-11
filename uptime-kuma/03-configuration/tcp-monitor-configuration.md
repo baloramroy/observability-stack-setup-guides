@@ -1,6 +1,6 @@
 # Uptime Kuma – TCP Port Monitor Configuration SOP
 
-## Purpose
+## Objective
 
 This SOP explains how to create a **TCP Port Monitor** in Uptime Kuma using a practical production-style example.
 
@@ -30,7 +30,7 @@ Monitor a production appgw service:
 
 Login to Uptime Kuma dashboard.
 
-Click:
+**Click:**
 
 ```text
 Add New Monitor
@@ -42,13 +42,13 @@ Add New Monitor
 
 ### Field: Monitor Type
 
-Value to Select
+**Value to Select**
 
 ```text
 TCP Port
 ```
 
-Description
+**Description**
 
 Checks whether the target TCP port is reachable and accepting connections.
 
@@ -58,13 +58,13 @@ Checks whether the target TCP port is reachable and accepting connections.
 
 ### Field: Friendly Name
 
-Example Value
+**Example Value**
 
 ```text
 DC3-PROD-APP01_APPGW_10.10.20.15:3306
 ```
 
-Description
+**Description**
 
 Human-readable monitor name shown in the dashboard.
 
@@ -72,7 +72,7 @@ Human-readable monitor name shown in the dashboard.
 
 ### Field: Hostname
 
-Example Value
+**Example Value**
 
 ```text
 10.10.20.15
@@ -83,13 +83,13 @@ Example Value
 
 ### Field: Port
 
-Example Value
+**Example Value**
 
 ```text
 3306
 ```
 
-Description
+**Description**
 
 TCP port number of appgw service, Uptime Kuma will test.
 
@@ -99,7 +99,7 @@ TCP port number of appgw service, Uptime Kuma will test.
 
 ### Field: Heartbeat Interval
 
-Example Value
+**Example Value**
 
 ```text
 60
@@ -107,7 +107,7 @@ Example Value
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Defines how often the TCP connectivity check runs.
 
@@ -115,13 +115,13 @@ Defines how often the TCP connectivity check runs.
 
 ### Field: Retries
 
-Example Value
+**Example Value**
 
 ```text
 3
 ```
 
-Description
+**Description**
 
 Monitor will try 3 times and be marked DOWN only after 3 consecutive failures.
 
@@ -129,7 +129,7 @@ Monitor will try 3 times and be marked DOWN only after 3 consecutive failures.
 
 ### Field: Heartbeat Retry Interval
 
-Example Value
+**Example Value**
 
 ```text
 60
@@ -137,7 +137,7 @@ Example Value
 
 >(Unit: seconds)
 
-Description
+**Description**
 
 Wait time between retry attempts after a failed check.
 
@@ -147,13 +147,13 @@ Wait time between retry attempts after a failed check.
 
 ### Field: Monitor Group
 
-Example Value
+**Example Value**
 
 ```text
 Production-Application
 ```
 
-Description
+**Description**
 
 Logical grouping for easier dashboard organization.
 
@@ -161,12 +161,11 @@ Logical grouping for easier dashboard organization.
 
 ### Field: Description
 
-Example Value
+**Example Value**
 
 ```text
 Primary Production Application Service.
 ```
-
 
 ---
 
@@ -174,13 +173,13 @@ Primary Production Application Service.
 
 ### Field: Set Up Notification
 
-Example Value
+**Example Value**
 
 ```text
 Microsoft-Teams-Infra-Alert
 ```
 
-Description
+**Description**
 
 Defines where alert notifications will be sent.
 
@@ -190,13 +189,13 @@ N.B: [Notification and Webhook Setup Guide](microsoft-teams-webhook-integration-
 
 ### Field: Resend Notification if Down X Times
 
-Example Value
+**Example Value**
 
 ```text
 3
 ```
 
-### Description
+**Description**
 
 - Resends alert after every 3 failed checks while monitor remains DOWN.
 - But in our setup we are keeping this value 0.
@@ -205,7 +204,7 @@ Example Value
 
 ## 7. Save Monitor
 
-Click:
+**Click:**
 
 ```text
 Save
