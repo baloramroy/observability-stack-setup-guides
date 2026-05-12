@@ -65,19 +65,20 @@ Expected:
 
 ---
 
-### Validate TLS Certificate
+### Validate Transport Layer Security
+
+
+Validate transport TLS handshake:
 
 ```bash
-openssl s_client -connect 192.168.10.11:9200
+openssl s_client -connect 192.168.10.11:9300
 ```
 
 This validates:
 
-* TLS handshake
-* certificate presentation
-* CA chain validation
-
-This is an excellent operational troubleshooting step.
+* inter-node encrypted communication
+* transport certificate trust
+* successful TLS-based cluster coordination
 
 ---
 
@@ -151,12 +152,30 @@ Expected:
 | yellow | Replica shards are missing |
 | red    | Primary shards are missing |
 
->[!TIP] 
-For a 3-node cluster, aim for `GREEN` status.
+> [!TIP]
+> For a 3-node cluster, aim for `GREEN` status.
 
 ---
 
-## 7. Validate Node Status
+## 7. Validate Elasticsearch Logs
+
+Very important.
+
+```bash
+journalctl -u elasticsearch -n 50
+```
+
+Look for:
+
+* bootstrap errors
+* TLS issues
+* cluster join failures
+
+This is a very useful troubleshooting step.
+
+---
+
+## 8. Validate Node Status
 
 ### Validate Node Membership
 
@@ -188,29 +207,37 @@ This validates:
 
 ---
 
-## 8. Validate Shard Allocation
+## 9. Validate Shard Allocation
 
 Very important operational check.
 
 ```bash
 curl -k -u elastic https://192.168.10.11:9200/_cat/shards?v
 ```
-Or:
+
+OR
 
 ```bash
 curl -k -u elastic https://192.168.10.11:9200/_cat/allocation?v
 ```
 
+Expected:
+
+* no unassigned shards
+* balanced shard allocation
+* acceptable disk usage
+
 This validates:
 
-* _cat/shards shows shard states
-* _cat/allocation shows disk allocation balance
+* shard states
+* shard placement
+* disk allocation balance
 
 This is an excellent real-world operational check.
 
 ---
 
-## 9. Validate JVM Heap
+## 10. Validate JVM Heap
 
 Very important.
 
@@ -228,7 +255,7 @@ This confirms that JVM tuning has been applied correctly.
 
 ---
 
-## 10. Validate Memory Locking
+## 11. Validate Memory Locking
 
 Very important.
 
@@ -249,7 +276,7 @@ This confirms:
 
 ---
 
-## 11. Validate File Descriptor Limits
+## 12. Validate File Descriptor Limits
 
 Very good operational validation.
 
@@ -273,7 +300,7 @@ Expected:
 
 ---
 
-## 12. Remove Bootstrap Setting (CRITICAL)
+## 13. Remove Bootstrap Setting (CRITICAL)
 
 > [!IMPORTANT]
 > `cluster.initial_master_nodes` is required only during the initial cluster bootstrap process.
@@ -302,7 +329,7 @@ cluster.initial_master_nodes:
 
 ---
 
-## 13. Safe Rolling Restart
+## 14. Safe Rolling Restart
 
 Perform a safe rolling restart of the cluster nodes.
 
@@ -326,6 +353,7 @@ Ensure:
 
 * cluster status returns `GREEN` or expected `YELLOW`
 * restarted node successfully rejoins the cluster
+* restarted node appears in `_cat/nodes`
 
 Then continue with:
 
@@ -334,7 +362,7 @@ Then continue with:
 
 ---
 
-## 14. Validate Cluster After Restart
+## 15. Validate Cluster After Restart
 
 After the rolling restart, validate again:
 
@@ -342,24 +370,6 @@ After the rolling restart, validate again:
 * Node Membership
 * Master Election
 * Shard Recovery
-
----
-
-## 15. Validate Elasticsearch Logs
-
-Very important.
-
-```bash
-journalctl -u elasticsearch -n 50
-```
-
-Look for:
-
-* bootstrap errors
-* TLS issues
-* cluster join failures
-
-This is a very useful troubleshooting step.
 
 ---
 
@@ -371,14 +381,12 @@ Very important operational check.
 df -h
 ```
 
->[!IMPORTANT]
-Elasticsearch may stop shard allocation when disk usage becomes too high
-
+> [!IMPORTANT]
+> Elasticsearch may stop shard allocation when disk usage becomes too high.
 
 ---
 
-
-## 18. Optional but VERY Professional — Test Index Creation
+## 17. Optional but VERY Professional — Test Index Creation
 
 This validates:
 
@@ -422,7 +430,7 @@ curl -k -u elastic -X DELETE https://192.168.10.11:9200/test-index
 
 ---
 
-## 19. Validate Security Features
+## 18. Validate Security Features
 
 > [!NOTE]
 > Security features are sometimes accidentally disabled during configuration changes.
@@ -446,20 +454,21 @@ This confirms:
 
 ---
 
-## 20. Validate Elasticsearch Keystore
+## 19. Validate Elasticsearch Keystore
+
+Verify required secure settings exist
 
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-keystore list
 ```
 
-Verify required secure settings exist.
-
 Example:
 
-* xpack.security.http.ssl.keystore.secure_password
-* xpack.security.transport.ssl.keystore.secure_password
+* `xpack.security.http.ssl.keystore.secure_password`
+* `xpack.security.transport.ssl.keystore.secure_password`
 
-Validate keystore file permissions::
+
+Validate keystore file permissions:
 
 ```bash
 ls -l /etc/elasticsearch/elasticsearch.keystore
@@ -471,11 +480,9 @@ Expected:
 -rw------- elasticsearch elasticsearch
 ```
 
-
 ---
 
-
-## 21. Validate Snapshot Repository
+## 20. Validate Snapshot Repository
 
 Example:
 
@@ -490,7 +497,7 @@ Validate:
 
 ---
 
-## 22. Node Failure Simulation
+## 21. Node Failure Simulation
 
 ### Example
 
@@ -515,16 +522,18 @@ This validates:
 
 ---
 
-## 23. Final Readiness Checklist
+## 22. Final Readiness Checklist
 
-| Validation                | Status |
-| ------------------------- | ------ |
-| Cluster health is green   | ✅      |
-| All 3 nodes joined        | ✅      |
-| TLS is working            | ✅      |
-| Heap is configured        | ✅      |
-| Memory locking enabled    | ✅      |
-| Bootstrap setting removed | ✅      |
-| Test indexing successful  | ✅      |
+| Validation                    | Status |
+| ----------------------------- | ------ |
+| Cluster health is green       | ✅      |
+| All 3 nodes joined            | ✅      |
+| TLS is working                | ✅      |
+| Heap is configured            | ✅      |
+| Memory locking enabled        | ✅      |
+| Bootstrap setting removed     | ✅      |
+| Test indexing successful      | ✅      |
+| Keystore validated            | ✅      |
+| Snapshot repository validated | ✅      |
 
 ---
