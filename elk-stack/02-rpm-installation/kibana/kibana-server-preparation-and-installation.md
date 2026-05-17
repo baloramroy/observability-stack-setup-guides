@@ -1,16 +1,4 @@
-Perfect 👍
-Now you are moving exactly in the **correct ELK learning order**.
-
-Below is a **from-zero, step-by-step, detailed guide** to install **Kibana on a separate node** and connect it to your **existing 3-node Elasticsearch cluster**.
-
-I’ll assume:
-• Elasticsearch cluster is already **GREEN**
-• Kibana will run on **a new VM (VM4)**
-• OS: **CentOS Stream 9**
-
----
-
-# Step 2: Install Kibana on a Separate Node (From Zero)
+# Install Kibana on a Separate Node (From Zero)
 
 ---
 
