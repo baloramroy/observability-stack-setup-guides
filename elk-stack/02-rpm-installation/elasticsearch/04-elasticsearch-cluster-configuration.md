@@ -428,6 +428,75 @@ chown -R elasticsearch:elasticsearch /var/lib/elasticsearch
 chown -R elasticsearch:elasticsearch /var/log/elasticsearch
 ```
 
+---
+
+## Add Secure Passwords To Elasticsearch Keystore
+
+Run the following commands on **ALL Elasticsearch nodes**.
+
+#
+
+**Add HTTP SSL Keystore Password**
+
+```bash
+/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+```
+
+You will be prompted to enter the HTTP certificate password.
+
+
+**Add Transport SSL Keystore Password**
+
+```bash
+/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
+```
+
+#
+
+### Verify Stored Secure Settings
+
+**List configured secure settings:**
+
+```bash
+/usr/share/elasticsearch/bin/elasticsearch-keystore list
+```
+
+**Expected output example:**
+
+```text
+xpack.security.http.ssl.keystore.secure_password
+xpack.security.transport.ssl.keystore.secure_password
+```
+
+>[!NOTE]
+Only setting names are displayed.\
+Secret values are never shown.
+
+#
+
+### Varify Secure Elasticsearch Keystore Permissions
+
+**Verify permissions:**
+
+```bash
+ls -l /etc/elasticsearch/elasticsearch.keystore
+```
+
+**Recommended:**
+
+```text
+-rw------- 1 root elasticsearch
+```
+
+**Fix permissions if required:**
+
+```bash
+chmod 600 /etc/elasticsearch/elasticsearch.keystore
+chown root:elasticsearch /etc/elasticsearch/elasticsearch.keystore
+```
+
+>[!NOTE]
+Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
 
 ---
 
