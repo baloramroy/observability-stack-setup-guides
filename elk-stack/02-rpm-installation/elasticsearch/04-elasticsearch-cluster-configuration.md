@@ -444,12 +444,40 @@ Run the following commands on **ALL Elasticsearch nodes**.
 
 You will be prompted to enter the HTTP certificate password.
 
+```text
+ElasticHttp@123
+```
+
+#
 
 **Add Transport SSL Keystore Password**
 
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
 ```
+
+You will be prompted to enter the Transport certificate password.
+
+```text
+ElasticTransport@123
+```
+
+#
+
+**Add Transport SSL Truststore Password**
+
+```bash
+/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
+```
+
+You will be prompted to enter the Transport certificate password.
+
+```text
+ElasticTransport@123
+```
+
+>[!NOTE]
+Why Transport Password? Because in the yml file we have pointed the same certificate for Keysote and Truststore security. If we were pointed direefernt certificate then the password would be different.
 
 #
 
@@ -466,6 +494,7 @@ You will be prompted to enter the HTTP certificate password.
 ```text
 xpack.security.http.ssl.keystore.secure_password
 xpack.security.transport.ssl.keystore.secure_password
+xpack.security.transport.ssl.truststore.secure_password
 ```
 
 >[!NOTE]
@@ -507,6 +536,14 @@ Although the file permission is 600, Elasticsearch can still access the keystore
 ```bash
 systemctl daemon-reload
 systemctl enable elasticsearch
+```
+
+#
+
+### Verify config syntax before start
+
+```bash
+/usr/share/elasticsearch/bin/elasticsearch --silent
 ```
 
 #

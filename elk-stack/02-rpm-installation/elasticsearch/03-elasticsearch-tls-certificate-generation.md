@@ -149,23 +149,16 @@ Run on `es-node-1`:
 mkdir -p /etc/elasticsearch/certs/{ca,transport,http}
 ```
 
-Set Ownership
-
+Create Directory for generated zip file certificate
 ```bash
-chown -R elasticsearch:elasticsearch /etc/elasticsearch/certs
-```
-
-Set Permissions
-
-```bash
-chmod -R 750 /etc/elasticsearch/certs
+mkdir -p /etc/elasticsearch/certs/zipcert/{transport,http}
 ```
 
 #
 
 ### Create Certificate Authority (CA)
 
-The CA will be used to sign Elasticsearch certificates.
+The CA will be used to **sign Elasticsearch** certificates.
 
 Recommended location:
 
@@ -209,7 +202,7 @@ Use a strong password in production environments.
 
 #
 
-### Generated CA File
+### Output CA File
 
 Generated file:
 
@@ -321,7 +314,7 @@ If node IPs or DNS names are missing from SANs:
 /usr/share/elasticsearch/bin/elasticsearch-certutil cert \
 --ca /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
 --in /etc/elasticsearch/certs/transport/instances.yml \
---out /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12
+--out /etc/elasticsearch/certs/zipcert/transport/elastic-transport-certificates.zip
 ```
 
 
@@ -347,19 +340,36 @@ You will be prompted for:
 
 #
 
-## Generated Transport Certificate File
+## Unzip Generated Transport File
 
-Generated file:
+### Generated file:
 
 ```bash
-/etc/elasticsearch/certs/transport/elastic-transport-certificates.p12
+/etc/elasticsearch/certs/zipcert/transport/elastic-transport-certificates.zip
 ```
 
-This **PKCS#12** keystore contains:
+>[!NOTE] 
+This a zip file. So we have to unzip this file and distribute each certificate to each node.
 
-* Node certificates
-* Private keys
-* CA certificate chain
+### Extract bundle
+
+```bash
+unzip /etc/elasticsearch/certs/zipcert/transport/elastic-transport-certificates.zip
+```
+
+- Now you will get:
+
+  ```
+  es-node-1/es-node-1.p12
+  es-node-2/es-node-2.p12
+  es-node-3/es-node-3.p12
+  ```
+
+- This **PKCS#12** keystore contains:
+
+  * Node certificates
+  * Private keys
+  * CA certificate chain
 
 ---
 
@@ -373,12 +383,12 @@ Copy certificates to all Elasticsearch nodes.
 From `es-node-1`:
 
 ```bash
-scp /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12 \
+scp /etc/elasticsearch/zipcert/transport/es-node-2 \
 root@192.168.10.12:/etc/elasticsearch/certs/transport/
 ```
 
 ```bash
-scp /etc/elasticsearch/certs/transport/elastic-transport-certificates.p12 \
+scp /etc/elasticsearch/zipcert/transport/es-node-3 \
 root@192.168.10.13:/etc/elasticsearch/certs/transport/
 ```
 
@@ -529,6 +539,23 @@ Provide:
 * es-node-3
 
 along with their IP addresses.
+
+**Enter IP Information**
+
+Provide:
+* 192.168.0.124
+* 192.168.0.125
+* 192.168.0.126
+
+**Password for the private key**
+```text
+ElasticHttp@123
+```
+
+**Then provide the path to save the fiel**
+```text
+/etc/elasticsearch/certs/elasticsearch-ssl-http.zip
+```
 
 ---
 
