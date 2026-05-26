@@ -311,7 +311,7 @@ We configured some setting during **system tuning** and now we will **configure 
 
 ## Configure JVM Heap Size
 
-### JVM Heap Rules
+### JVM Heap Rules - Knowledge Base
 
 Default JVM heap is often not ideal.
 
@@ -452,13 +452,15 @@ But systemd ignores those [File Discriptor](01-system-preparation.md#26-file-des
 
 ---
 
-## Add Secure Passwords To Elasticsearch Keystore
+## Elasticsearch Keystore Configuration
 
 Run the following commands on **ALL Elasticsearch nodes**.
 
 #
 
-- **Add HTTP SSL Keystore Password**
+### Add Certificate Secure Passwords to Elasticsearch Keystore
+
+- **HTTP SSL Keystore Password**
 
   ```bash
   /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
@@ -470,9 +472,9 @@ Run the following commands on **ALL Elasticsearch nodes**.
   ElasticHttp@123
   ```
 
-#
 
-- **Add Transport SSL Keystore Password**
+
+- **Transport SSL Keystore Password**
 
   ```bash
   /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
@@ -484,9 +486,8 @@ Run the following commands on **ALL Elasticsearch nodes**.
   ElasticTransport@123
   ```
 
-#
 
-- **Add Transport SSL Truststore Password**
+- **Transport SSL Truststore Password**
 
   ```bash
   /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
@@ -500,11 +501,11 @@ Run the following commands on **ALL Elasticsearch nodes**.
 
 >[!NOTE]
 Why **Transport** Password for **Trustore**?\
-Because in the yml file we have pointed the **same certificate** for `Keysote` and `Truststore` security. If we were pointed **different certificate** then the password would be different.
+Because in the `yml` file we have pointed the **same certificate** for `Keysote` and `Truststore` security. If we were pointed **different certificate** then the **password would be different**.
 
 #
 
-### Verify Stored Secure Settings
+### Verify Keystore Secure Settings
 
 - **List configured secure settings:**
 
@@ -525,7 +526,7 @@ Only **setting** names are displayed. **Secret** values are never **shown**.
 
 #
 
-### Varify Secure Elasticsearch Keystore Permissions
+### Varify Elasticsearch Keystore Permissions
 
 - **Verify permissions:**
 
@@ -547,31 +548,32 @@ Only **setting** names are displayed. **Secret** values are never **shown**.
   ```
 
 >[!NOTE]
-Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
+Although the file **permission** is `600`, Elasticsearch can still access the **keystore** through its **privileged startup** and **internal secure settings handling mechanism**.
 
 ---
 
-## Start Elasticsearch Cluster
+## Prepare to Launch Elasticsearch Cluster
 
-### Enable ES Service
+### Deamon Reload & Enable ES Service
 
-```bash
-systemctl daemon-reload
-systemctl enable elasticsearch
-```
+- Reload deamon first to read the changed configuration
+
+  ```bash
+  systemctl daemon-reload
+  ```
+
+- Enable the elasticsearch service
+
+  ```bash
+  systemctl enable elasticsearch
+  ```
+
 
 #
 
-### Verify config syntax before start
+### Start Elasticsearch Services by Order
 
-```bash
-/usr/share/elasticsearch/bin/elasticsearch --silent
-```
-
-#
-
-### Start ES Services - Order Matters First Time
-
+>[!IMPORTANT]
 Start **one by one**, not all together.
 
 - **On Elasticsearch node-1**
@@ -580,7 +582,7 @@ Start **one by one**, not all together.
   systemctl start elasticsearch
   ```
 
-  >Wait 1–2 minutes.
+  - Wait 1–2 minutes.
 
 - **On Elasticsearch node-2**
 
@@ -588,7 +590,7 @@ Start **one by one**, not all together.
   systemctl start elasticsearch
   ```
 
-  >Wait.
+  - Wait.
 
 - **On Elasticsearch node-3**
 
@@ -652,7 +654,7 @@ VERY IMPORTANT during first startup.
   }
   ```
 
-### Cluster health status:
+### Cluster Health Status:
 
 - Green 🟢:\
   all primary and replica shards allocated
