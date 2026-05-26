@@ -1,24 +1,27 @@
 # Configure Elasticsearch Cluster (All Nodes)
 
+## Scope
+
+>[!Important]
 Now Elasticsearch packages are **installed** on all 3 servers.
 
 **At this stage:**
 
-* Elasticsearch service exists
-* Config files exist
-* Security certificates are generated using Elasticsearch cert-util
-* But cluster is NOT configured yet
+* Elasticsearch **service exists**
+* **Config** files exist
+* Security **certificates are generated** using Elasticsearch **cert-util**
+* But **cluster** is **NOT configured yet**
 
 **Now we will:**
 
 1. Configure **node identity**
-2. Configure cluster discovery
-3. Assign node roles
-4. Configure networking
-5. Configure JVM heap
-6. Configure systemd limits
-7. Start cluster
-8. Verify cluster formation
+2. Configure **cluster discovery**
+3. Assign **node roles**
+4. Configure **networking**
+5. Configure **JVM heap**
+6. Configure **systemd limits**
+7. **Start** cluster
+8. **Verify** cluster formation
 
 ---
 
@@ -282,25 +285,29 @@ xpack.security.http.ssl:
 
 ## Bootstrap Checks
 
-When Elasticsearch binds to a **non-localhost** network interface using:
-```
-network.host
-```
-- Elasticsearch enters **production mode**.
-- In production mode, Elasticsearch enforces **bootstrap checks** to ensure the system is **properly configured** for stability and performance.
+- **When Elasticsearch binds to a **non-localhost** network interface using:**
 
-Common bootstrap checks include:
+  ```
+  network.host
+  ```
+  - Elasticsearch enters **production mode**.
+  - In production mode, Elasticsearch enforces **bootstrap checks** to ensure the system is **properly configured** for stability and performance.
 
-- [vm.max_map_count](01-system-preparation.md#25-increase-virtual-memory)
-- [swap disabled](01-system-preparation.md#)
-- JVM heap settings
-- file descriptor limits
-- memory locking
+- **Common bootstrap checks include:**
 
-If these checks fail, Elasticsearch will refuse to start.
+    - [vm.max_map_count](01-system-preparation.md#25-increase-virtual-memory)
+    - [swap disabled](01-system-preparation.md#)
+    - JVM heap settings
+    - file descriptor limits
+    - memory locking
 
->[!Tip]We configured some setting during system tuning and now we will configure the rest.
+- **If these checks fail, Elasticsearch will refuse to start.**
+  
 
+>[!Tip] 
+We configured some setting during **system tuning** and now we will **configure the rest**.
+
+---
 
 ## Configure JVM Heap Size
 
