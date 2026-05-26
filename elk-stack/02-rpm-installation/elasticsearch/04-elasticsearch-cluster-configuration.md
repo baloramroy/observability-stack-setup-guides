@@ -299,7 +299,7 @@ Common bootstrap checks include:
 
 If these checks fail, Elasticsearch will refuse to start.
 
->We configured some setting during system tuning and now we will configure the rest.
+>[!Tip]We configured some setting during system tuning and now we will configure the rest.
 
 
 ## Configure JVM Heap Size
@@ -341,12 +341,12 @@ Default JVM heap is often not ideal.
   ```
 
 
-**Meaning:**
+- **Meaning:**
 
-| Option | Purpose      |
-| ------ | ------------ |
-| Xms    | Initial heap |
-| Xmx    | Maximum heap |
+  | Option | Purpose      |
+  | ------ | ------------ |
+  | Xms    | Initial heap |
+  | Xmx    | Maximum heap |
 
 >[!IMPORTANT]
 Both values MUST be same
@@ -355,19 +355,19 @@ Both values MUST be same
 
 ## Configure Systemd File Desciptor Limits
 
-### 1. Earlier in the preparation chapter:
+### Earlier in the preparation chapter:
 
 - We configured file descriptor:
 
   ```bash
   /etc/security/limits.d/elasticsearch.conf
   ```
-  >[!Note]
-  But systemd ignores those [File Discriptor](01-system-preparation.md#26-file-descriptor-limits) limits as it is installed by package manager.
+>[!Note]
+But systemd ignores those [File Discriptor](01-system-preparation.md#26-file-descriptor-limits) limits as it is installed by package manager.
 
 #
 
-### 2. Now configure real service limits.
+### Now configure real service limits.
 
 - Create Override Directory On ALL nodes:
 
@@ -430,11 +430,11 @@ Both values MUST be same
   ls -ld /var/log/elasticsearch
   ```
 
-  - Expected:
+- Expected:
 
-    ```text
-    elasticsearch elasticsearch
-    ```
+  ```text
+  elasticsearch elasticsearch
+  ```
 
 - Fix if needed:
 
@@ -491,9 +491,9 @@ Run the following commands on **ALL Elasticsearch nodes**.
   ElasticTransport@123
   ```
 
-  >[!NOTE]
-  Why **Transport** Password for **Trustore**?\
-  Because in the yml file we have pointed the **same certificate** for `Keysote` and `Truststore` security. If we were pointed **different certificate** then the password would be different.
+>[!NOTE]
+Why **Transport** Password for **Trustore**?\
+Because in the yml file we have pointed the **same certificate** for `Keysote` and `Truststore` security. If we were pointed **different certificate** then the password would be different.
 
 #
 
@@ -513,8 +513,8 @@ Run the following commands on **ALL Elasticsearch nodes**.
   xpack.security.transport.ssl.truststore.secure_password
   ```
 
-  >[!NOTE]
-  Only **setting** names are displayed. **Secret** values are never **shown**.
+>[!NOTE]
+Only **setting** names are displayed. **Secret** values are never **shown**.
 
 #
 
@@ -539,8 +539,8 @@ Run the following commands on **ALL Elasticsearch nodes**.
   chown root:elasticsearch /etc/elasticsearch/elasticsearch.keystore
   ```
 
-  >[!NOTE]
-  Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
+>[!NOTE]
+Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
 
 ---
 
@@ -645,7 +645,7 @@ VERY IMPORTANT during first startup.
   }
   ```
 
-Cluster health status:
+### Cluster health status:
 
 - Green 🟢:\
   all primary and replica shards allocated
