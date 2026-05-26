@@ -24,7 +24,7 @@ Now Elasticsearch packages are **installed** on all 3 servers.
 
 ## Understand Elasticsearch Node Roles
 
-Before configuration, understand the roles.
+**Before configuration, understand the roles.**
 
 | VM  | Hostname  | IP (example)  | Role                   |
 | --- | --------- | ------------- | ---------------------- |
@@ -32,21 +32,22 @@ Before configuration, understand the roles.
 | VM2 | es-node-2 | 192.168.10.12 | Master + Data + Ingest |
 | VM3 | es-node-3 | 192.168.10.13 | Master + Data + Ingest |
 
-For small lab:
 
-* All 3 nodes:
+**All 3 nodes roles are:**
+```
+* master
+* data
+* ingest
+```
 
-  * master
-  * data
-  * ingest
+**This is called:**
 
-This is called:
+```
+* Multi-purpose node architecture
+```
 
-* **Multi-purpose node architecture**
-
-Good for:
-
-* Labs
+**This Architecture is Good for:**
+* Small Labs
 * Small production
 * Learning
 
@@ -65,7 +66,16 @@ Good for:
 
 ---
 
-## Configure ElasticSearch Node 1
+## ElasticSearch all Node Configuration
+Configure below settings one by one in all node:
+
+1. [Configure ElasticSearch Node - 01](#️-configure-elasticsearch-node---01)
+2. [Configure ElasticSearch Node - 02](#️-configure-elasticsearch-node---02)
+3. [Configure ElasticSearch Node - 03](#️-configure-elasticsearch-node---03)
+
+#
+
+### ➡️ Configure ElasticSearch Node - 01
 
 Login to:
 
@@ -136,21 +146,23 @@ cluster.initial_master_nodes:
 xpack.security.enabled: true
 
 # Transport SSL
-xpack.security.transport.ssl.enabled: true
-xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.keystore.path: certs/transport/elastic-transport-certificates.p12
-xpack.security.transport.ssl.truststore.path: certs/transport/elastic-transport-certificates.p12
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: certs/transport/es-node-1/es-node-1.p12
+  truststore.path: certs/transport/es-node-1/es-node-1.p12
 
 # HTTP SSL
-xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.keystore.path: certs/http/http.p12
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: certs/http/http.p12
 ```
 
 Save and exit.
 
 ---
 
-## Configure ElasticSearch Node 2
+### ➡️ Configure ElasticSearch Node - 02
 
 Login to:
 
@@ -163,7 +175,6 @@ Edit:
 ```bash
 vim /etc/elasticsearch/elasticsearch.yml
 ```
-
 
 **Replace/Add Below Configuration**
 
@@ -196,20 +207,21 @@ cluster.initial_master_nodes:
 
 xpack.security.enabled: true
 
-# Transport SSL
-xpack.security.transport.ssl.enabled: true
-xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.keystore.path: certs/transport/elastic-transport-certificates.p12
-xpack.security.transport.ssl.truststore.path: certs/transport/elastic-transport-certificates.p12
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: certs/transport/es-node-2/es-node-2.p12
+  truststore.path: certs/transport/es-node-2/es-node-2.p12
 
 # HTTP SSL
-xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.keystore.path: certs/http/http.p12
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: certs/http/http.p12
 ```
 
 ---
 
-# 4.5 Configure ElasticSearch Node 3
+### ➡️ Configure ElasticSearch Node - 03
 
 Login to:
 
@@ -254,15 +266,16 @@ cluster.initial_master_nodes:
 
 xpack.security.enabled: true
 
-# Transport SSL
-xpack.security.transport.ssl.enabled: true
-xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.keystore.path: certs/transport/elastic-transport-certificates.p12
-xpack.security.transport.ssl.truststore.path: certs/transport/elastic-transport-certificates.p12
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: certs/transport/es-node-3/es-node-3.p12
+  truststore.path: certs/transport/es-node-3/es-node-3.p12
 
 # HTTP SSL
-xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.keystore.path: certs/http/http.p12
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: certs/http/http.p12
 ```
 
 ---
@@ -295,138 +308,140 @@ If these checks fail, Elasticsearch will refuse to start.
 
 Default JVM heap is often not ideal.
 
-Rule:
+- Rule:
 
-* Heap = 50% of RAM
-* Never more than 31 GB
+  * Heap = 50% of RAM
+  * Never more than 31 GB
 
-Your nodes:
-```text
-RAM = 4 GB
-```
-Recommended:
+- Your nodes:
+  ```text
+  RAM = 4 GB
+  ```
+- Recommended:
 
-```text
-2 GB heap
-```
+  ```text
+  2 GB heap
+  ```
 
 #
 
 ### Edit JVM Options
 
-On ALL nodes:
+- On ALL nodes:
 
-```bash
-vim /etc/elasticsearch/jvm.options.d/heap.options
-```
+  ```bash
+  vim /etc/elasticsearch/jvm.options.d/heap.options
+  ```
 
-Add below line:
+- Add below line:
 
-```text
--Xms2g
--Xmx2g
-```
+  ```text
+  -Xms2g
+  -Xmx2g
+  ```
 
-Meaning:
+
+**Meaning:**
 
 | Option | Purpose      |
 | ------ | ------------ |
 | Xms    | Initial heap |
 | Xmx    | Maximum heap |
 
-IMPORTANT:
-
-* Both values MUST be same
+>[!IMPORTANT]
+Both values MUST be same
 
 ---
 
 ## Configure Systemd File Desciptor Limits
 
-### Earlier we configured:
+### 1. Earlier in the preparation chapter:
 
-```bash
-/etc/security/limits.d/elasticsearch.conf
-```
+- We configured file descriptor:
 
-But systemd ignores those [File Discriptor](01-system-preparation.md#26-file-descriptor-limits) limits as it is installed by package manager.
+  ```bash
+  /etc/security/limits.d/elasticsearch.conf
+  ```
+  >[!Note]
+  But systemd ignores those [File Discriptor](01-system-preparation.md#26-file-descriptor-limits) limits as it is installed by package manager.
 
 #
 
-### Now configure real service limits.
+### 2. Now configure real service limits.
 
-Create Override Directory On ALL nodes:
+- Create Override Directory On ALL nodes:
 
-```bash
-mkdir -p /etc/systemd/system/elasticsearch.service.d
-```
+  ```bash
+  mkdir -p /etc/systemd/system/elasticsearch.service.d
+  ```
 
-Create Override File
+- Create Override File
 
-```bash
-vim /etc/systemd/system/elasticsearch.service.d/override.conf
-```
+  ```bash
+  vim /etc/systemd/system/elasticsearch.service.d/override.conf
+  ```
 
-Add:
+  Add:
 
-```ini
-[Service]
-LimitNOFILE=65535
-LimitNPROC=4096
-LimitMEMLOCK=infinity
-```
-Note: `LimitMEMLOCK=infinity` - Allows Elasticsearch to lock JVM memory and prevent swapping.
+  ```ini
+  [Service]
+  LimitNOFILE=65535
+  LimitNPROC=4096
+  LimitMEMLOCK=infinity
+  ```
+  Note: `LimitMEMLOCK=infinity` - Allows Elasticsearch to lock JVM memory and prevent swapping.
 
-Reload systemd
+- Reload systemd
 
-```bash
-systemctl daemon-reload
-```
+  ```bash
+  systemctl daemon-reload
+  ```
 
 ---
 
 ## Enable Memory Locking
 
-Edit:
+- Edit:
 
-```bash
-vim /etc/elasticsearch/elasticsearch.yml
-```
+  ```bash
+  vim /etc/elasticsearch/elasticsearch.yml
+  ```
 
-Add:
+- Add:
 
-```yaml
-bootstrap.memory_lock: true
-```
+  ```yaml
+  bootstrap.memory_lock: true
+  ```
 
-Purpose:
+- Purpose:
 
-```
-Prevent JVM memory swapping
-```
+  ```
+  Prevent JVM memory swapping
+  ```
 
 ---
 
 ## Verify Elasticsearch User Permissions
 
-Check ownership:
+- Check ownership:
 
-```bash
-ls -ld /var/lib/elasticsearch
-ls -ld /var/log/elasticsearch
-```
+  ```bash
+  ls -ld /var/lib/elasticsearch
+  ls -ld /var/log/elasticsearch
+  ```
 
-Expected:
+  - Expected:
 
-```text
-elasticsearch elasticsearch
-```
+    ```text
+    elasticsearch elasticsearch
+    ```
 
-Fix if needed:
+- Fix if needed:
 
-```bash
-chown -R elasticsearch:elasticsearch /var/lib/elasticsearch
-chown -R elasticsearch:elasticsearch /var/log/elasticsearch
-```
+  ```bash
+  chown -R elasticsearch:elasticsearch /var/lib/elasticsearch
+  chown -R elasticsearch:elasticsearch /var/log/elasticsearch
+  ```
 
 ---
 
@@ -436,96 +451,96 @@ Run the following commands on **ALL Elasticsearch nodes**.
 
 #
 
-**Add HTTP SSL Keystore Password**
+- **Add HTTP SSL Keystore Password**
 
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
-```
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
+  ```
 
-You will be prompted to enter the HTTP certificate password.
+  You will be prompted to enter the HTTP certificate password.
 
-```text
-ElasticHttp@123
-```
-
-#
-
-**Add Transport SSL Keystore Password**
-
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
-```
-
-You will be prompted to enter the Transport certificate password.
-
-```text
-ElasticTransport@123
-```
+  ```text
+  ElasticHttp@123
+  ```
 
 #
 
-**Add Transport SSL Truststore Password**
+- **Add Transport SSL Keystore Password**
 
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
-```
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password
+  ```
 
-You will be prompted to enter the Transport certificate password.
+  You will be prompted to enter the Transport certificate password.
 
-```text
-ElasticTransport@123
-```
+  ```text
+  ElasticTransport@123
+  ```
 
->[!NOTE]
-Why Transport Password? Because in the yml file we have pointed the same certificate for Keysote and Truststore security. If we were pointed direefernt certificate then the password would be different.
+#
+
+- **Add Transport SSL Truststore Password**
+
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password
+  ```
+
+  You will be prompted to enter the Transport certificate password.
+
+  ```text
+  ElasticTransport@123
+  ```
+
+  >[!NOTE]
+  Why **Transport** Password for **Trustore**?\
+  Because in the yml file we have pointed the **same certificate** for `Keysote` and `Truststore` security. If we were pointed **different certificate** then the password would be different.
 
 #
 
 ### Verify Stored Secure Settings
 
-**List configured secure settings:**
+- **List configured secure settings:**
 
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-keystore list
-```
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-keystore list
+  ```
 
-**Expected output example:**
+- **Expected output example:**
 
-```text
-xpack.security.http.ssl.keystore.secure_password
-xpack.security.transport.ssl.keystore.secure_password
-xpack.security.transport.ssl.truststore.secure_password
-```
+  ```text
+  xpack.security.http.ssl.keystore.secure_password
+  xpack.security.transport.ssl.keystore.secure_password
+  xpack.security.transport.ssl.truststore.secure_password
+  ```
 
->[!NOTE]
-Only setting names are displayed.\
-Secret values are never shown.
+  >[!NOTE]
+  Only **setting** names are displayed. **Secret** values are never **shown**.
 
 #
 
 ### Varify Secure Elasticsearch Keystore Permissions
 
-**Verify permissions:**
+- **Verify permissions:**
 
-```bash
-ls -l /etc/elasticsearch/elasticsearch.keystore
-```
+  ```bash
+  ls -l /etc/elasticsearch/elasticsearch.keystore
+  ```
 
-**Recommended:**
+- **Recommended:**
 
-```text
--rw------- 1 root elasticsearch
-```
+  ```text
+  -rw------- 1 root elasticsearch
+  ```
 
-**Fix permissions if required:**
+- **Fix permissions if required:**
 
-```bash
-chmod 600 /etc/elasticsearch/elasticsearch.keystore
-chown root:elasticsearch /etc/elasticsearch/elasticsearch.keystore
-```
+  ```bash
+  chmod 600 /etc/elasticsearch/elasticsearch.keystore
+  chown root:elasticsearch /etc/elasticsearch/elasticsearch.keystore
+  ```
 
->[!NOTE]
-Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
+  >[!NOTE]
+  Although the file permission is 600, Elasticsearch can still access the keystore through its privileged startup and internal secure settings handling mechanism.
 
 ---
 
@@ -552,41 +567,43 @@ systemctl enable elasticsearch
 
 Start **one by one**, not all together.
 
-**On Elasticsearch node-1**
+- **On Elasticsearch node-1**
 
-```bash
-systemctl start elasticsearch
-```
+  ```bash
+  systemctl start elasticsearch
+  ```
 
->Wait 1–2 minutes.
+  >Wait 1–2 minutes.
 
-**On Elasticsearch node-2**
+- **On Elasticsearch node-2**
 
-```bash
-systemctl start elasticsearch
-```
+  ```bash
+  systemctl start elasticsearch
+  ```
 
->Wait.
+  >Wait.
 
-**On Elasticsearch node-3**
+- **On Elasticsearch node-3**
 
-```bash
-systemctl start elasticsearch
-```
+  ```bash
+  systemctl start elasticsearch
+  ```
 
 #
 
 ### Check Service Status
 
-```bash
-systemctl status elasticsearch
-```
+- Run Status Command:
 
-Must be:
+  ```bash
+  systemctl status elasticsearch
+  ```
 
-```text
-Active: active (running)
-```
+- Must be:
+
+  ```text
+  Active: active (running)
+  ```
 
 ---
 
@@ -594,17 +611,17 @@ Active: active (running)
 
 VERY IMPORTANT during first startup.
 
-Run:
+- Run:
 
-```bash
-journalctl -u elasticsearch -f
-```
+  ```bash
+  journalctl -u elasticsearch -f
+  ```
 
-OR:
+- OR:
 
-```bash
-tail -f /var/log/elasticsearch/elasticsearch.log
-```
+  ```bash
+  tail -f /var/log/elasticsearch/elasticsearch.log
+  ```
 
 ---
 
@@ -612,31 +629,31 @@ tail -f /var/log/elasticsearch/elasticsearch.log
 
 ### Check Cluster Health
 
-From any node:
+- From any node:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_cluster/health?pretty
-```
+  ```bash
+  curl -k -u elastic https://192.168.10.11:9200/_cluster/health?pretty
+  ```
 
-Expected:
+  Expected:
 
-```json
-{
-  "cluster_name" : "elk-prod-cluster",
-  "status" : "green",
-  "number_of_nodes" : 3
-}
-```
+  ```json
+  {
+    "cluster_name" : "elk-prod-cluster",
+    "status" : "green",
+    "number_of_nodes" : 3
+  }
+  ```
 
 Cluster health status:
 
-- green:\
+- Green 🟢:\
   all primary and replica shards allocated
 
-- yellow:\
+- Yellow 🟡:\
   primary shards allocated but some replicas missing
 
-- red:\
+- Red 🔴:\
   some primary shards unavailable
 
 ---
