@@ -17,34 +17,34 @@ This SOP validates:
 
 ## 2. Validate Elasticsearch Service Status
 
-Run on ALL nodes:
+- Run on ALL nodes:
 
-```bash
-systemctl status elasticsearch
-```
+  ```bash
+  systemctl status elasticsearch
+  ```
 
-Expected:
+- Expected:
 
-```text
-active (running)
-```
+  ```text
+  active (running)
+  ```
 
 ---
 
 ## 3. Validate Listening Ports
 
-Check listening ports:
+- Check listening ports:
 
-```bash
-ss -tulnp | grep -E '9200|9300'
-```
+  ```bash
+  ss -tulnp | grep -E '9200|9300'
+  ```
 
-Expected:
+- Expected:
 
-* `9200` → HTTPS API
-* `9300` → Transport layer
+  * `9200` → HTTPS API
+  * `9300` → Transport layer
 
-This validates proper network binding and listening services.
+  >This validates proper network binding and listening services.
 
 ---
 
@@ -98,7 +98,7 @@ Very important.
   * valid JSON response
   * cluster information
 
----
+#
 
 ### Validate Transport Layer Security
 
@@ -120,40 +120,32 @@ Very important.
 
 ## 6. Validate Cluster Health
 
-Cluster health validation confirms:
+- Run from any node:
 
-* shard allocation
-* node membership
-* cluster coordination
+  ```bash
+  curl -k -u elastic:PASS https://192.168.0.124:9200/_cluster/health?pretty
+  ```
 
-### Check Cluster Health
+- Expected:
 
-Run from any node:
+  ```json
+  {
+    "cluster_name" : "elk-prod-cluster",
+    "status" : "green",
+    "number_of_nodes" : 3
+  }
+  ```
 
-```bash
-curl -k -u elastic:PASS https://192.168.0.124:9200/_cluster/health?pretty
-```
+- Cluster Health Status:
 
-Expected:
+  - Green 🟢:\
+    All primary and replica shards allocated
 
-```json
-{
-  "cluster_name" : "elk-prod-cluster",
-  "status" : "green",
-  "number_of_nodes" : 3
-}
-```
+  - Yellow 🟡:\
+    Primary shards allocated but some replicas missing
 
-Cluster Health Status:
-
-- Green 🟢:\
-  all primary and replica shards allocated
-
-- Yellow 🟡:\
-  primary shards allocated but some replicas missing
-
-- Red 🔴:\
-  some primary shards unavailable
+  - Red 🔴:\
+    Some primary shards unavailable
 
 > [!TIP]
 > For a 3-node cluster, aim for `GREEN` status.
@@ -162,23 +154,23 @@ Cluster Health Status:
 
 ## 7. Validate Elasticsearch Logs
 
-Very important.
+- Very important.
 
-```bash
-journalctl -u elasticsearch -n 50
-```
+  ```bash
+  journalctl -u elasticsearch -n 50
+  ```
 
-Look for:
+- Look for:
 
-* bootstrap errors
-* TLS issues
-* cluster join failures
+  * bootstrap errors
+  * TLS issues
+  * cluster join failures
 
-This is a very useful troubleshooting step.
+>This is a very useful troubleshooting step.
 
 ---
 
-## 8. Validate Node Status
+## 8. Validate Node Status & Master
 
 ### Validate Node Membership
 
@@ -235,13 +227,23 @@ This is a very useful troubleshooting step.
 
 ## 9. Validate Shard Allocation
 
-Very important operational check for shards:
+Shard allocation validation ensures:
+
+- Data is properly distributed
+- Replication is working
+- No node is overloaded or unhealthy
+
+#
+
+### Check Shard Distribution
+
+**Command:**
 
 ```bash
 curl -k -u elastic https://192.168.0.124:9200/_cat/shards?v
 ```
 
-Output:
+**Example Output:**
 
 ```
 index                                 shard prirep state   docs  store dataset ip            node
@@ -253,62 +255,84 @@ index                                 shard prirep state   docs  store dataset i
 .ds-ilm-history-7-2026.05.27-000001   0     r      STARTED    3 11.1kb  11.1kb 192.168.0.126 es-node-3
 ```
 
-### Cluster is balanced (Primary + Replica)
+**Interpretation**
 
-- Example: .security-7
-  - p → es-node-1
-  - r → es-node-2
+1. Shard Types
 
-- Meaning:
+   * `p` → Primary shard
+   * `r` → Replica shard
 
-  - p = primary shard
-  - r = replica shard
 
-So data is replicated correctly → high availability is OK.
+2. Health State
 
-### Indices are healthy
+   * `STARTED` → Shard is active and fully operational
+   * Any other state (e.g. INITIALIZING, UNASSIGNED) → potential issue
 
-**You have:**
 
-- Security index
-  
-  ```
-  .security-7
-  ```
-  - Critical for authentication
+3. Key Observation
 
-- Logs / ILM indices
-  
-  ```
-  .ds-ilm-history-7...
-  .ds-.logs-elasticsearch.deprecation-default...
-  ```
-  - These are:
-    - Data stream system indices
-    - Used for logging + lifecycle management
+    Example:
 
-**Result:**
-- All are: STARTED ✔
-- Properly replicated
+    ```
+    .security-7
+    p → es-node-1
+    r → es-node-2
+    ```
+
+    Meaning:
+
+    * Data is replicated across nodes
+    * High availability is working correctly
+
+
+4. System Indices
+
+    Common system indices:
+
+    * `.security-7` → Authentication and security data
+    * `.ds-ilm-history-*` → Index lifecycle management history
+    * `.logs-*` → Logging data streams
 
 
 #
 
-OR Check distributing shards and disk usage
+### Check Cluster Allocation & Disk Usage
+
+**Command**
 
 ```bash
 curl -k -u elastic:PASS https://192.168.0.124:9200/_cat/allocation?v
 ```
 
-Output:
+**Output:**
 
 ```
 shards shards.undesired disk.indices disk.used disk.avail disk.total host          node      node.role
      2                0       56.4kb     4.2gb     12.6gb     16.9gb 192.168.0.124 es-node-1 dim
      2                0       57.3kb     4.1gb     12.8gb     16.9gb 192.168.0.125 es-node-2 dim
      2                0       23.1kb     4.1gb     12.8gb     16.9gb 192.168.0.126 es-node-3 dim
-
 ```
+
+**Interpretation**
+
+1. Shard Distribution
+
+   * Each node holds a small number of shards
+   * No imbalance observed
+
+
+2. Disk Usage
+
+   * `disk.used` → actual storage used
+   * `disk.avail` → free space
+   * `disk.total` → total capacity
+
+
+3. Key Health Check
+
+   - ✔ No node is overloaded
+   - ✔ No disk pressure detected
+   - ✔ Shards are evenly distributed
 
 ---
 
@@ -332,22 +356,22 @@ shards shards.undesired disk.indices disk.used disk.avail disk.total host       
 
 ## 11. Validate Memory Locking
 
-Very important.
+- Very important.
 
-```bash
-curl -k -u elastic https://192.168.0.124:9200/_nodes?filter_path=**.mlockall
-```
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/_nodes?filter_path=**.mlockall
+  ```
 
-Expected:
+- Expected:
 
-```json
-"mlockall" : true
-```
+  ```json
+  "mlockall" : true
+  ```
 
-This confirms:
+  This confirms:
 
-* swap prevention
-* memory locking is active
+  * swap prevention
+  * memory locking is active
 
 ---
 
@@ -379,7 +403,7 @@ This confirms:
 > `cluster.initial_master_nodes` is required only during the initial cluster bootstrap process.\
 > Leaving it permanently configured may cause future cluster formation problems.
 
-After the cluster becomes healthy:
+After the cluster becomes **healthy**:
 
 - Edit the configuration file on ALL nodes:
 
@@ -451,11 +475,15 @@ After the rolling restart, validate again:
 
 ## 17. Optional but VERY Professional — Test Index Creation
 
-- This validates:
+**This validates:**
 
-  * indexing functionality
-  * shard creation
-  * cluster write capability
+* indexing functionality
+* shard creation
+* cluster write capability
+
+#
+
+**Test Index Creation:**
 
 - Create Test Index
 
