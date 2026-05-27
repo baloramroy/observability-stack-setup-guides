@@ -629,7 +629,7 @@ VERY IMPORTANT during first startup.
 - OR:
 
   ```bash
-  tail -f /var/log/elasticsearch/elasticsearch.log
+  tail -f /var/log/elasticsearch/elk-prod-cluster.log
   ```
 
 ---

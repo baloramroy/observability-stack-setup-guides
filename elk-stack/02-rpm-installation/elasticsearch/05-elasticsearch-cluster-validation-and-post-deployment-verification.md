@@ -48,73 +48,73 @@ This validates proper network binding and listening services.
 
 ---
 
-## 4. Validate TLS Connectivity
+## 4. Retrieve or Reset Elastic Password
+
+- Retrieve Auto-Generated Password
+
+  ```bash
+  grep "generated password" /var/log/elasticsearch/elasticsearch.log
+  ```
+
+  > Elasticsearch 8.x and later versions automatically generate a password during the initial startup.
+
+
+- Reset Password (If Initial Password Is Lost)
+
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+  ```
+
+  > You will be prompted to set a custom password.
+
+
+- Verify Authentication
+
+  ```bash
+  curl -k -u elastic:8wCPuSah*ZPTDs_GE6MY https://192.168.0.124:9200
+  ```
+
+- Expected:
+
+  * valid JSON response
+
+
+---
+
+## 5. Validate TLS Connectivity
 
 Very important.
 
 ### Check HTTPS Connectivity
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200
-```
+- Validate HTTP TLS handshake:
 
-Expected:
+  ```bash
+  curl -k -u elastic:PASS https://192.168.0.124:9200
+  ```
 
-* valid JSON response
-* cluster information
+- Expected:
+
+  * valid JSON response
+  * cluster information
 
 ---
 
 ### Validate Transport Layer Security
 
 
-Validate transport TLS handshake:
+- Validate transport TLS handshake:
 
-```bash
-openssl s_client -connect 192.168.10.11:9300
-```
+  ```bash
+  openssl s_client -connect 192.168.10.11:9300
+  ```
 
-This validates:
+- This validates:
 
-* inter-node encrypted communication
-* transport certificate trust
-* successful TLS-based cluster coordination
+  * inter-node encrypted communication
+  * transport certificate trust
+  * successful TLS-based cluster coordination
 
----
-
-## 5. Retrieve or Reset Elastic Password
-
-### Retrieve Auto-Generated Password
-
-```bash
-grep "generated password" /var/log/elasticsearch/elasticsearch.log
-```
-
-> [!NOTE]
-> Elasticsearch 8.x and later versions automatically generate a password during the initial startup.
-
----
-
-### Reset Password (If Initial Password Is Lost)
-
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
-```
-
-> [!NOTE]
-> You will be prompted to set a custom password.
-
----
-
-### Verify Authentication
-
-```bash
-curl -k -u elastic https://192.168.10.11:9200
-```
-
-Expected:
-
-* valid JSON response
 
 ---
 
@@ -131,7 +131,7 @@ Cluster health validation confirms:
 Run from any node:
 
 ```bash
-curl -k -u elastic https://192.168.10.11:9200/_cluster/health?pretty
+curl -k -u elastic:PASS https://192.168.0.124:9200/_cluster/health?pretty
 ```
 
 Expected:
@@ -144,13 +144,16 @@ Expected:
 }
 ```
 
-### Understanding Cluster State Colors
+Cluster Health Status:
 
-| Color  | Meaning                    |
-| ------ | -------------------------- |
-| green  | All shards are healthy     |
-| yellow | Replica shards are missing |
-| red    | Primary shards are missing |
+- Green 🟢:\
+  all primary and replica shards allocated
+
+- Yellow 🟡:\
+  primary shards allocated but some replicas missing
+
+- Red 🔴:\
+  some primary shards unavailable
 
 > [!TIP]
 > For a 3-node cluster, aim for `GREEN` status.
@@ -179,79 +182,151 @@ This is a very useful troubleshooting step.
 
 ### Validate Node Membership
 
-Run from any node:
+- Run from any node:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_cat/nodes?v
-```
+  ```bash
+  curl -k -u elastic:PASS https://192.168.0.124:9200/_cat/nodes?v
+  ```
 
-Validate:
+- Output:
 
-* all expected nodes joined
-* node roles are correct
-* one elected master exists
+  ```
+  ip             heap.percent ram.percent  cpu  node.role  master  name
+  192.168.0.124            19          96    0  dim        *       es-node-1
+  192.168.0.125            71          95    1  dim        -       es-node-2
+  192.168.0.126            56          99    1  dim        -       es-node-3
+  ```
+
+- Role Decoding
+
+  - `m`  → master node
+  - `d`  → data node
+  - `i`  → ingest node
+  - `*`  → current elected master
+
+- Validate:
+
+  * all expected nodes joined
+  * node roles are correct
+  * one elected master exists
 
 ---
 
 ### Validate Elected Master Node
 
-Run from any node:
+- Run from any node:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_cat/master?v
-```
+  ```bash
+  curl -k -u elastic:PASS https://192.168.0.124:9200/_cat/master?v
+  ```
 
-This validates:
+- Output:
 
-* elected master node
+  ```
+  id                      host           ip             node
+  XP6aYZieRR2wgcJ5CpZocQ  192.168.0.124  192.168.0.124  es-node-1
+  ```
+
+- This validates:
+
+  * elected master node
 
 ---
 
 ## 9. Validate Shard Allocation
 
-Very important operational check.
+Very important operational check for shards:
 
 ```bash
-curl -k -u elastic https://192.168.10.11:9200/_cat/shards?v
+curl -k -u elastic https://192.168.0.124:9200/_cat/shards?v
 ```
 
-OR
+Output:
+
+```
+index                                 shard prirep state   docs  store dataset ip            node
+.ds-.logs-elasticsearch.deprecation.. 0     p      STARTED    2   12kb    12kb 192.168.0.126 es-node-3
+.ds-.logs-elasticsearch.deprecation.. 0     r      STARTED    2   12kb    12kb 192.168.0.125 es-node-2
+.security-7                           0     p      STARTED   30 45.3kb  45.3kb 192.168.0.124 es-node-1
+.security-7                           0     r      STARTED   30 45.3kb  45.3kb 192.168.0.125 es-node-2
+.ds-ilm-history-7-2026.05.27-000001   0     p      STARTED    3   11kb    11kb 192.168.0.124 es-node-1
+.ds-ilm-history-7-2026.05.27-000001   0     r      STARTED    3 11.1kb  11.1kb 192.168.0.126 es-node-3
+```
+
+### Cluster is balanced (Primary + Replica)
+
+- Example: .security-7
+  - p → es-node-1
+  - r → es-node-2
+
+- Meaning:
+
+  - p = primary shard
+  - r = replica shard
+
+So data is replicated correctly → high availability is OK.
+
+### Indices are healthy
+
+**You have:**
+
+- Security index
+  
+  ```
+  .security-7
+  ```
+  - Critical for authentication
+
+- Logs / ILM indices
+  
+  ```
+  .ds-ilm-history-7...
+  .ds-.logs-elasticsearch.deprecation-default...
+  ```
+  - These are:
+    - Data stream system indices
+    - Used for logging + lifecycle management
+
+**Result:**
+- All are: STARTED ✔
+- Properly replicated
+
+
+#
+
+OR Check distributing shards and disk usage
 
 ```bash
-curl -k -u elastic https://192.168.10.11:9200/_cat/allocation?v
+curl -k -u elastic:PASS https://192.168.0.124:9200/_cat/allocation?v
 ```
 
-Expected:
+Output:
 
-* no unassigned shards
-* balanced shard allocation
-* acceptable disk usage
+```
+shards shards.undesired disk.indices disk.used disk.avail disk.total host          node      node.role
+     2                0       56.4kb     4.2gb     12.6gb     16.9gb 192.168.0.124 es-node-1 dim
+     2                0       57.3kb     4.1gb     12.8gb     16.9gb 192.168.0.125 es-node-2 dim
+     2                0       23.1kb     4.1gb     12.8gb     16.9gb 192.168.0.126 es-node-3 dim
 
-This validates:
-
-* shard states
-* shard placement
-* disk allocation balance
-
-This is an excellent real-world operational check.
+```
 
 ---
 
 ## 10. Validate JVM Heap
 
-Very important.
+- Very important.
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_nodes/jvm?pretty
-```
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/_nodes/jvm?pretty
+  ```
 
-Verify:
+- Verify:
 
-* `Xms`
-* `Xmx`
-* heap size
+  * `Xms`
+  * `Xmx`
+  * heap size
 
-This confirms that JVM tuning has been applied correctly.
+  This confirms that JVM tuning has been applied correctly.
 
 ---
 
@@ -260,7 +335,7 @@ This confirms that JVM tuning has been applied correctly.
 Very important.
 
 ```bash
-curl -k -u elastic https://192.168.10.11:9200/_nodes?filter_path=**.mlockall&pretty
+curl -k -u elastic https://192.168.0.124:9200/_nodes?filter_path=**.mlockall
 ```
 
 Expected:
@@ -278,87 +353,75 @@ This confirms:
 
 ## 12. Validate File Descriptor Limits
 
-Very good operational validation.
+- Get the Elasticsearch PID:
 
-Get the Elasticsearch PID:
+  ```bash
+  pgrep -f org.elasticsearch.bootstrap.Elasticsearch
+  ```
 
-```bash
-pgrep -f org.elasticsearch.bootstrap.Elasticsearch
-```
+- Then run:
 
-Then run:
+  ```bash
+  cat /proc/<PID>/limits | grep "Max open files"
+  ```
 
-```bash
-cat /proc/<PID>/limits | grep "Max open files"
-```
+- Expected:
 
-Expected:
-
-```text
-65535
-```
+  ```text
+  65535
+  ```
 
 ---
 
 ## 13. Remove Bootstrap Setting (CRITICAL)
 
 > [!IMPORTANT]
-> `cluster.initial_master_nodes` is required only during the initial cluster bootstrap process.
->
+> `cluster.initial_master_nodes` is required only during the initial cluster bootstrap process.\
 > Leaving it permanently configured may cause future cluster formation problems.
 
 After the cluster becomes healthy:
 
-Edit the configuration file on ALL nodes:
+- Edit the configuration file on ALL nodes:
 
-```bash
-vim /etc/elasticsearch/elasticsearch.yml
-```
+  ```bash
+  vim /etc/elasticsearch/elasticsearch.yml
+  ```
 
-Remove the following section:
+- Remove the following section:
 
-```yaml
-cluster.initial_master_nodes:
-  - es-node-1
-  - es-node-2
-  - es-node-3
-```
+  ```yaml
+  cluster.initial_master_nodes:
+    - es-node-1
+    - es-node-2
+    - es-node-3
+  ```
 
 > [!IMPORTANT]
-> Do NOT restart all nodes simultaneously.
-
----
-
-## 14. Safe Rolling Restart
-
+Do NOT restart all nodes simultaneously.\
 Perform a safe rolling restart of the cluster nodes.
 
-### Restart Node 1
+- Restart Node 1
 
-```bash
-systemctl restart elasticsearch
-```
+  ```bash
+  systemctl restart elasticsearch
+  ```
 
----
+- After Restarting Validate cluster health:
 
-### After Restarting Each Node
+  ```bash
+  curl -k -u elastic:PASS https://192.168.0.124:9200/_cluster/health?pretty
+  ```
 
-Validate cluster health:
+  Ensure:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_cluster/health?pretty
-```
+  * cluster status returns `GREEN` or expected `YELLOW`
+  * restarted node successfully rejoins the cluster
+  * restarted node appears in `_cat/nodes`
 
-Ensure:
+- Then continue with:
 
-* cluster status returns `GREEN` or expected `YELLOW`
-* restarted node successfully rejoins the cluster
-* restarted node appears in `_cat/nodes`
-
-Then continue with:
-
-* Node2
-* Node3
+  * Node2
+  * Node3
 
 ---
 
@@ -375,11 +438,11 @@ After the rolling restart, validate again:
 
 ## 16. Validate Disk Space
 
-Very important operational check.
+- Very important operational check.
 
-```bash
-df -h
-```
+  ```bash
+  df -h
+  ```
 
 > [!IMPORTANT]
 > Elasticsearch may stop shard allocation when disk usage becomes too high.
@@ -388,137 +451,170 @@ df -h
 
 ## 17. Optional but VERY Professional — Test Index Creation
 
-This validates:
+- This validates:
 
-* indexing functionality
-* shard creation
-* cluster write capability
+  * indexing functionality
+  * shard creation
+  * cluster write capability
 
-### Create Test Index
+- Create Test Index
 
-```bash
-curl -k -u elastic -X PUT https://192.168.10.11:9200/test-index
-```
+  ```bash
+  curl -k -u elastic -X PUT https://192.168.0.124:9200/test-index
+  ```
 
----
 
-### Insert Test Document
+- Insert Test Document
 
-```bash
-curl -k -u elastic -X POST https://192.168.10.11:9200/test-index/_doc \
--H "Content-Type: application/json" \
--d '{"name":"elastic-test"}'
-```
+  ```bash
+  curl -k -u elastic -X POST https://192.168.0.124:9200/test-index/_doc \
+  -H "Content-Type: application/json" \
+  -d '{"name":"elastic-test"}'
+  ```
 
----
 
-### Search Test Data
+- Search Test Data
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/test-index/_search?pretty
-```
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/test-index/_search?pretty
+  ```
 
----
 
-### Cleanup Test Index
+- Cleanup Test Index
 
-```bash
-curl -k -u elastic -X DELETE https://192.168.10.11:9200/test-index
-```
+  ```bash
+  curl -k -u elastic -X DELETE https://192.168.0.124:9200/test-index
+  ```
 
 > This is an extremely valuable operational validation step.
 
 ---
 
-## 18. Validate Security Features
+## 18. Validate Security & Features
 
 > [!NOTE]
 > Security features are sometimes accidentally disabled during configuration changes.
 
-### Validate Security Configuration
+### Validate Security Authentication
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_xpack?pretty
-```
+- Run below command
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/_security/_authenticate?pretty
+  ```
 
-OR
+- Output:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_security/_authenticate?pretty
-```
+  ```json
+  {
+  "username" : "elastic",
+    "roles" : [
+      "superuser"
+    ],
+    "full_name" : null,
+    "email" : null,
+    "metadata" : {
+      "_reserved" : true
+    },
+  }
+  ```
 
-This confirms:
+- This confirms:
 
-* authentication is working
-* security features are enabled
+  * authentication is working
+  * security features are enabled
 
+#
+
+### Validate License Status 
+
+- Feature and license status report
+
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/_xpack?pretty
+  ```
+
+- Output:
+
+  ```json
+  {
+    "build" : {
+      "hash" : "3c7c6027c5769d860d87448e2749f4c550a239da",
+      "date" : "2026-05-08T10:08:29.383338563Z"
+    },
+    "license" : {
+      "uid" : "5cc4ced7-2680-47c3-9a7a-2fcc9302fcda",
+      "type" : "basic",
+      "mode" : "basic",
+      "status" : "active"
+    },
+  }
+  ```
 ---
 
 ## 19. Validate Elasticsearch Keystore
 
-Verify required secure settings exist
+- Verify required secure settings exist
 
-```bash
-/usr/share/elasticsearch/bin/elasticsearch-keystore list
-```
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-keystore list
+  ```
 
-Example:
+  Example:
 
-* `xpack.security.http.ssl.keystore.secure_password`
-* `xpack.security.transport.ssl.keystore.secure_password`
+  * `xpack.security.http.ssl.keystore.secure_password`
+  * `xpack.security.transport.ssl.keystore.secure_password`
+  * `xpack.security.transport.ssl.truststore.secure_password`
 
 
-Validate keystore file permissions:
+- Validate keystore file permissions:
 
-```bash
-ls -l /etc/elasticsearch/elasticsearch.keystore
-```
+  ```bash
+  ls -l /etc/elasticsearch/elasticsearch.keystore
+  ```
 
-Expected:
+  Expected:
 
-```text
--rw------- elasticsearch elasticsearch
-```
+  ```text
+  -rw------- elasticsearch elasticsearch
+  ```
 
 ---
 
 ## 20. Validate Snapshot Repository
 
-Example:
+- Example:
 
-```bash
-curl -k -u elastic https://192.168.10.11:9200/_snapshot?pretty
-```
+  ```bash
+  curl -k -u elastic https://192.168.0.124:9200/_snapshot?pretty
+  ```
 
-Validate:
+- Validate:
 
-* repository configured
-* repository is accessible and writable
+  * repository configured
+  * repository is accessible and writable
 
 ---
 
 ## 21. Node Failure Simulation
 
-### Example
+- Stop one node:
 
-Stop one node:
+  ```bash
+  systemctl stop elasticsearch
+  ```
 
-```bash
-systemctl stop elasticsearch
-```
+- Validate:
 
-Validate:
+  * cluster remains operational
+  * quorum is maintained
+  * shards are reallocated properly
 
-* cluster remains operational
-* quorum is maintained
-* shards are reallocated properly
+  >Then restart the node.
 
-Then restart the node.
+- This validates:
 
-This validates:
-
-* high availability (HA)
-* real production resiliency
+  * high availability (HA)
+  * real production resiliency
 
 ---
 
