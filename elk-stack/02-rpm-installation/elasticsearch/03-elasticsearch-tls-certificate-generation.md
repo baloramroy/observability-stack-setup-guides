@@ -383,12 +383,12 @@ Copy certificates to all Elasticsearch nodes.
 From `es-node-1`:
 
 ```bash
-scp /etc/elasticsearch/zipcert/transport/es-node-2 \
+scp -r /etc/elasticsearch/zipcert/transport/es-node-2 \
 root@192.168.10.12:/etc/elasticsearch/certs/transport/
 ```
 
 ```bash
-scp /etc/elasticsearch/zipcert/transport/es-node-3 \
+scp -r /etc/elasticsearch/zipcert/transport/es-node-3 \
 root@192.168.10.13:/etc/elasticsearch/certs/transport/
 ```
 
@@ -445,7 +445,7 @@ HTTP TLS secures **Elasticsearch API communication** on port `9200`.
 
 ### Generate HTTP Certificates
 
-Run:
+Run on ONE Elasticsearch node (recommended: `es-node-1`).
 
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-certutil http
@@ -455,9 +455,10 @@ This command starts an interactive wizard.
 
 #
 
+
 ### HTTP Certificate Wizard Answers
 
-**Generate CSR?**
+**1. Generate CSR?**
 
 - Choose:
 
@@ -465,14 +466,14 @@ This command starts an interactive wizard.
   n
   ```
 
-- Reason:
+- Example:
 
   ```text
-  We are using our own internal CA.
+  Generate a CSR? [y/N] n
   ```
-#
 
-**Use Existing CA?**
+
+**2. Use Existing CA?**
 
 - Choose:
 
@@ -480,47 +481,75 @@ This command starts an interactive wizard.
   y
   ```
 
-#
+- Example:
 
-**Enter CA Path**
+  ```text
+  Use an existing CA? [y/N] y
+  ```
 
-- Paste
+
+**3. Enter CA Path**
+
+- Provide the CA `.p12` file path:
 
   ```text
   /etc/elasticsearch/certs/ca/elastic-stack-ca.p12
   ```
 
-#
+- Example:
 
-**Enter CA Password**
+  ```text
+  CA Path: /etc/elasticsearch/certs/ca/elastic-stack-ca.p12
+  ```
 
-- Provide the CA password.
 
-  Example:
+**4. Enter CA Password**
+
+>[!Note] 
+Provide the password used when the CA was created.
+
+- Example:
+
+   ```text
+   Password for elastic-stack-ca.p12:
+   ```
+
+- Example password:
 
   ```text
   ElasticCA@123
   ```
 
+
 #
 
-**Certificate Validity**
+### Certificate Validity
+
+- Meaning:
+
+  ```text
+  3 years
+  ```
 
 - Example:
 
   ```text
-  3650D
+  For how long should your certificate be valid? [5y] 3Y
   ```
 
-- This means:
+- You may also use:
 
-  ```text
-  10 years
-  ```
+  | Value | Meaning |
+  | ----- | ------- |
+  | `90D` | 90 days |
+  | `1Y`  | 1 year  |
+  | `3Y`  | 3 years |
+  | `5Y`  | 5 years |
+
 
 #
 
-**One Certificate Per Node?**
+### Generate One Certificate Per Node
 
 - Choose:
 
@@ -528,84 +557,246 @@ This command starts an interactive wizard.
   y
   ```
 
-#
+- Example:
 
-**Enter Node Information**
-
-Provide:
-
-* es-node-1
-* es-node-2
-* es-node-3
-
-along with their IP addresses.
-
-**Enter IP Information**
-
-Provide:
-* 192.168.0.124
-* 192.168.0.125
-* 192.168.0.126
-
-**Password for the private key**
-```text
-ElasticHttp@123
-```
-
-**Then provide the path to save the fiel**
-```text
-/etc/elasticsearch/certs/elasticsearch-ssl-http.zip
-```
+  ```text
+  Generate a certificate per node? [y/N] y
+  ```
 
 ---
 
-## Generated HTTP Certificate Package
+### Node Information
 
-Generated file:
+**1. Node #1 Name**
 
-```bash
-elasticsearch-ssl-http.zip
-```
+- Example:
 
-Extract HTTP Certificate Package
-
-```bash
-unzip elasticsearch-ssl-http.zip
-```
-
-The archive contains:
-
-  * HTTP certificates
-  * PKCS#12 keystores
-  * Sample configuration files
+  ```text
+  node #1 name: es-node-1
+  ```
 
 
-After extraction, copy each node's `http.p12` file to its **corresponding Elasticsearch node.**
-```
-/elasticsearch/
-├── es-node-1/
-│   └── http.p12
-├── es-node-2/
-│   └── http.p12
-└── es-node-3/
-    └── http.p12
-```
+**2. Hostnames For es-node-1**
+
+Enter **ALL DNS** names or **hostnames** clients may use to connect.
+
+- Example:
+
+  ```text
+  es-node-1
+  ```
+
+  Press ENTER again when finished.
+
+- Example:
+
+  ```text
+  You entered the following hostnames.
+
+  - es-node-1
+
+  Is this correct [Y/n] y
+  ```
+
+  > Do NOT enter IP addresses here.
+
+
+**3. IP Addresses For es-node-1**
+
+Enter the node IP address.
+
+- Example:
+
+  ```text
+  192.168.0.124
+  ```
+
+  Press ENTER again when finished.
+
+- Example:
+
+  ```text
+  You entered the following IP addresses.
+
+  - 192.168.0.124
+
+  Is this correct [Y/n] y
+  ```
+
+#
+
+### Additional Certificate Options
+
+- Recommended:
+
+  ```text
+  Do you wish to change any of these options? [y/N] n
+  ```
+
+- Default values are usually correct:
+
+  ```text
+  Key Size: 2048
+  Key Usage: digitalSignature,keyEncipherment
+  ```
+
+#
+
+### Generate Additional Certificates
+
+- Choose:
+
+  ```text
+  y
+  ```
+
+  for remaining nodes.
+
+- Example:
+
+  ```text
+  Generate additional certificates? [Y/n] y
+  ```
+
+#
+
+### Node #2 Example
+
+- Node Name
+
+  ```text
+  es-node-2
+  ```
+
+- Hostname
+
+  ```text
+  es-node-2
+  ```
+
+- IP Address
+
+  ```text
+  192.168.0.125
+  ```
+
+#
+
+### Node #3 Example
+
+- Node Name
+
+  ```text
+  es-node-3
+  ```
+
+- Hostname
+
+  ```text
+  es-node-3
+  ```
+
+- IP Address
+
+  ```text
+  192.168.0.126
+  ```
+
+#
+
+### Finish Additional Certificates
+
+- After the last node:
+
+  ```text
+  Generate additional certificates? [Y/n] n
+  ```
+
+#
+
+### HTTP Certificate Password
+
+This password protects the generated `http.p12` files.
+
+- Example:
+
+  ```text
+  Provide a password for the "http.p12" file:
+  ```
+
+- Example password:
+
+  ```text
+  ElasticHttp@123
+  ```
+
+> You may leave it blank by pressing ENTER, but password protection is recommended.
+
+#
+
+### Output ZIP File Location
+
+- Example:
+
+  ```text
+  What filename should be used for the output zip file?
+  [/usr/share/elasticsearch/elasticsearch-ssl-http.zip]
+  /etc/elasticsearch/certs/zipcert/http/elasticsearch-ssl-http.zip
+  ```
+
+- Final Output
+  ```text
+  Zip file written to:
+  /etc/elasticsearch/certs/zipcert/http/elasticsearch-ssl-http.zip
+  ```
+
+
+---
+
+## ZIP File Extraction
+
+- Extract HTTP Certificate Package
+
+  ```bash
+  unzip /etc/elasticsearch/certs/zipcert/http/elasticsearch-ssl-http.zip
+  ```
+
+- The archive contains:
+
+    * HTTP certificates
+    * PKCS#12 keystores
+    * Sample configuration files
+
+
+- After extraction
+
+  ```
+  /elasticsearch/
+  ├── es-node-1/
+  │   └── http.p12
+  ├── es-node-2/
+  │   └── http.p12
+  └── es-node-3/
+      └── http.p12
+  ```
 
 ---
 
 ## Copy HTTP Certificates
 
-Place appropriate HTTP certificate files into:
+After extraction, copy each node's `http.p12` file from each directory to its **corresponding Elasticsearch node.**
 
-```bash
-/etc/elasticsearch/certs/http/
-```
+- Place appropriate HTTP certificate files into:
 
-Example:
+  ```bash
+  /etc/elasticsearch/certs/http/
+  ```
 
-```bash
-/etc/elasticsearch/certs/http/http.p12
-```
+- Example:
+
+  ```bash
+  /etc/elasticsearch/certs/http/http.p12
+  ```
 
 ---
 
@@ -613,6 +804,7 @@ Example:
 
 ### Transport TLS
 You used:
+
 ```
 One certificate for all nodes
 ```
@@ -622,7 +814,9 @@ So:
 - goes to every node.
 
 ### HTTP TLS
+
 You selected:
+
 ```
 One certificate per node = YES
 ```
@@ -637,6 +831,28 @@ So:
 The certificates we have generated:
 - Eventually expire and require renewal.
 - Renewal procedures should be planned before certificate expiration dates.
+
+---
+
+## Recommended Best Practice
+
+For production Elasticsearch clusters:
+
+1. Generate:
+
+   * One certificate per node
+   * Separate private key per node
+
+2. Include:
+
+   * Correct hostname
+   * Correct node IP
+
+3. Use:
+
+   * Same CA for the whole cluster
+
+This is the cleanest and most professional deployment model.
 
 ---
 
