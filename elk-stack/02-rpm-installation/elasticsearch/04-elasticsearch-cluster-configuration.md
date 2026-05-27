@@ -634,39 +634,6 @@ VERY IMPORTANT during first startup.
 
 ---
 
-## Verify Cluster Status
-
-### Check Cluster Health
-
-- From any node:
-
-  ```bash
-  curl -k -u elastic https://192.168.10.11:9200/_cluster/health?pretty
-  ```
-
-  Expected:
-
-  ```json
-  {
-    "cluster_name" : "elk-prod-cluster",
-    "status" : "green",
-    "number_of_nodes" : 3
-  }
-  ```
-
-### Cluster Health Status:
-
-- Green 🟢:\
-  all primary and replica shards allocated
-
-- Yellow 🟡:\
-  primary shards allocated but some replicas missing
-
-- Red 🔴:\
-  some primary shards unavailable
-
----
-
 ## Common Beginner Mistakes
 
 - Forgetting swapoff
