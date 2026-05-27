@@ -8,9 +8,9 @@ Before installing **Elasticsearch** on the host machine, we need to take care of
 
 | VM  | Hostname  | IP (example)  | Role                   |
 | --- | --------- | ------------- | ---------------------- |
-| VM1 | es-node-1 | 192.168.10.11 | Master + Data + Ingest |
-| VM2 | es-node-2 | 192.168.10.12 | Master + Data + Ingest |
-| VM3 | es-node-3 | 192.168.10.13 | Master + Data + Ingest |
+| VM1 | es-node-1 | 192.168.0.124 | Master + Data + Ingest |
+| VM2 | es-node-2 | 192.168.0.125 | Master + Data + Ingest |
+| VM3 | es-node-3 | 192.168.0.126 | Master + Data + Ingest |
 
 > Use static IPs. Elasticsearch cluster discovery becomes unreliable if node IPs change frequently.
 
@@ -83,9 +83,9 @@ Do these steps **on ALL 3 nodes**.
 - Add hostname in system hosts file:
 
   ```text
-  192.168.10.11  es-node-1
-  192.168.10.12  es-node-2
-  192.168.10.13  es-node-3
+  192.168.0.124  es-node-1
+  192.168.0.125  es-node-2
+  192.168.0.126  es-node-3
   ```
 
 Why need hostname entries in the hosts file?
