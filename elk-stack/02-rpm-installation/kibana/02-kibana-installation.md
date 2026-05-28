@@ -6,8 +6,8 @@ This Kibana installation is part of an existing secure Elastic Stack deployment 
 
 - Elasticsearch cluster is already **installed and fully operational**
 - **TLS/SSL** security is already enabled for:
-  - Node-to-node communication (transport layer)
-  - Client communication (HTTP layer)
+  - **Node-to-node** communication (transport layer)
+  - **Client** communication (HTTP layer)
 - Certificates **(CA + node certificates)** are already generated and configured
 
 ---
@@ -16,12 +16,12 @@ This Kibana installation is part of an existing secure Elastic Stack deployment 
 
 Because Elasticsearch is already secured:
 
-- Kibana MUST connect using HTTPS (not HTTP)
-- Kibana MUST trust Elasticsearch CA certificate
-- Authentication will be required (elastic user or service account token)
-- Kibana setup will include TLS verification
+- Kibana MUST connect using **HTTPS (not HTTP)**
+- Kibana MUST trust **Elasticsearch CA certificate**
+- **Authentication** will be required (elastic user or service account token)
+- Kibana setup will include **TLS verification**
 
-⚠ This means Kibana installation is NOT standalone — it is tightly coupled with the existing secured Elasticsearch cluster.
+> This means Kibana installation is NOT standalone — it is tightly coupled with the existing secured Elasticsearch cluster.
 
 
 ---
@@ -42,7 +42,7 @@ Because Elasticsearch is already secured:
 | RAM      | 2 GB    | 4 GB        |
 | Disk     | 20 GB   | 20–50 GB    |
 
-Kibana is lightweight compared to Elasticsearch.
+- Kibana is lightweight compared to Elasticsearch.
 
 
 ---
@@ -150,7 +150,7 @@ baseurl=https://artifacts.elastic.co/packages/<version-name>.x/yum
 
 
 ## Post-Installation Note (IMPORTANT)
-
+>[!Important]
 ⚠ Do NOT start Kibana yet.
 
 Next steps (to be covered in the next SOP):

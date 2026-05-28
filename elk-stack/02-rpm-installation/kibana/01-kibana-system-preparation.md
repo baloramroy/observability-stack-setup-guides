@@ -18,16 +18,18 @@ Unlike **Elasticsearch**, Kibana does NOT require:
 * It does **NOT store or search data locally**
 * It only **communicates with Elasticsearch** via **HTTP/HTTPS** API
 
-So all Elasticsearch-level kernel tuning is NOT applicable here.
+>So all Elasticsearch-level kernel tuning is NOT applicable here.
 
 ---
 
 ## Optional System Tuning (Recommended for Production)
 
-Kibana is lightweight, but for **stability** in production environments, you may apply: `File Descriptor Limit`
+Kibana is lightweight, but for **stability** in **production** environments, you may apply: `File Descriptor Limit`
 
 >[!Note]
-Temporary ulimit changes are not recommended for system services.
+**Temporary** ulimit changes are not **recommended** for **system services**.
+
+#
 
 ### Permanent File Descriptor Setting for Kibana
 
@@ -117,23 +119,19 @@ Elasticsearch 8.x  →  Kibana 8.x
 
 ## Verify the Installed Elastic Versions (Prerequisite Check)
 
-Before installation, confirm the installed elasticsearch versions:
+- Before installation, confirm the installed elasticsearch versions:
 
-```bash
-rpm -qa | grep elasticsearch
-```
+  ```bash
+  rpm -qa | grep elasticsearch
+  OR
+  dnf list installed | grep elasticsearch
+  ```
 
-OR:
+- Output:
 
-```bash
-dnf list installed | grep elasticsearch
-```
-
-Output:
-
-```bash
-elasticsearch-9.4.1-1.x86_64
-```
+  ```bash
+  elasticsearch-9.4.1-1.x86_64
+  ```
 
 This ensures:
 
