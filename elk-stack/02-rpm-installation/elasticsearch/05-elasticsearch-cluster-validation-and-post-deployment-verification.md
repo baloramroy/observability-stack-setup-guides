@@ -90,13 +90,13 @@ Very important.
 - Validate HTTP TLS handshake:
 
   ```bash
-  curl -k -u elastic:PASS https://192.168.0.124:9200
+  curl -vk https://192.168.0.124:9200
   ```
 
 - Expected:
 
   * valid JSON response
-  * cluster information
+  * tls information
 
 #
 
