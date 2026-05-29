@@ -124,13 +124,7 @@ We will maintain **two trust domains**:
 
 ---
 
-
-## Prepare Elasticsearch CA Certificate
-
-Kibana must **trust** the **CA** that **signed** Elasticsearch **HTTP** certificates.
-
-
-### Create Certificate Directory
+## Create Certificate Directory
 
 Run on `kibana-node`:
 
@@ -138,18 +132,98 @@ Run on `kibana-node`:
 mkdir -p /etc/kibana/certs/{elastic-certs,kibana-certs}
 ```
 
+Certificate Directory would look like:
+
+```
+/etc/kibana/certs/
+├── elastic-certs/
+│   └── elasticsearch-ca.pem
+│
+└── kibana-certs/
+    ├── kibana-server.crt
+    └── kibana-server.key
+```
+
+---
+
+## Prepare Elasticsearch CA Certificate
+
+Kibana must **trust** the **CA** that **signed** Elasticsearch **HTTP** certificates.
+
 #
 
-### Copy Elasticsearch CA Certificate
+### Copy Elasticsearch CA Certificate OR
 
 From `es-node-1`:
 
 ```bash
-scp /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
+scp /etc/elasticsearch/certs/zipcert/kibana/elasticsearch-ca.pem \
 root@192.168.0.123:/etc/kibana/certs/elastic-certs/
 ```
 
+- **Remmeber** This certificate was generated during the elastic search http certificate generation.
 
+- If somehow this step was missing during certificate generation, then we can extract `elasticsearch-ca.pem` certificate from `elastic-stack-ca.p12` bundle.
+
+#
+
+### Extract `elasticsearch-ca.pem` File
+
+- Run on `es-node-1`:
+
+  ```bash
+  openssl pkcs12 \
+  -in /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
+  -clcerts -nokeys \
+  -out /etc/elasticsearch/certs/ca/elasticsearch-ca.pem
+  ```
+
+- Explanation:
+
+  - clcerts → export certificates only
+  - nokeys → NEVER export private keys
+
+- It will ask:
+  
+  ```
+  Enter Import Password:
+  ```
+
+- Provide the password used when creating the CA.
+
+  ```text
+  ElasticCA@123
+  ```
+
+#
+
+### Verify Exported File
+
+```bash
+openssl x509 -in /etc/elasticsearch/certs/ca/elasticsearch-ca.pem -text -noout
+```
+
+We should see:
+
+- Subject
+- Issuer
+- Validity
+- Public Key
+
+NO PRIVATE KEY should exist.
+
+#
+
+### Copy ONLY CA Public Certificate to Kibana
+
+```bash
+scp /etc/elasticsearch/certs/ca/elasticsearch-ca.pem \
+root@192.168.0.123:/etc/kibana/certs/elastic-certs/
+```
+
+Now Kibana receives ONLY:
+- public CA certificate
+- no secret material
 
 
 #
@@ -173,126 +247,22 @@ Run on `kibana-node`:
 
 ---
 
-# 2. Create Kibana System User Password
+## Enable Elastic CA on Kibana
 
-Kibana should use the built-in `kibana_system` user for Elasticsearch communication.
+- To make this effective we have to add below line in `kibana.yml`:
 
-- Run on ONE Elasticsearch node:
-
-  ```bash
-  /usr/share/elasticsearch/bin/elasticsearch-reset-password \
-  -u kibana_system
+  ```yml
+  elasticsearch.ssl.certificateAuthorities:
+    - /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem
   ```
 
-- Example output:
-
-  ```text
-  New value: xxxxxxxxxxxxx
-  ```
-
-  Save this password securely.
-
----
-
-## Configure Kibana
-
-
-
-### 3.1 Edit Kibana Configuration
-
-Run on `kibana-node`:
-
-```bash
-vi /etc/kibana/kibana.yml
-```
-
----
-
-### 3.2 Configure Kibana Secure Settings
-
-Add or modify:
-
-```yaml
-# ---------------------------------------
-# Kibana Server
-# ---------------------------------------
-
-server.port: 5601
-server.host: "0.0.0.0"
-
-server.name: "kibana-node"
-
-# ---------------------------------------
-# Elasticsearch Connection
-# ---------------------------------------
-
-elasticsearch.hosts:
-  - "https://es-node-1:9200"
-  - "https://es-node-2:9200"
-  - "https://es-node-3:9200"
-
-# ---------------------------------------
-# Kibana Authentication
-# ---------------------------------------
-
-elasticsearch.username: "kibana_system"
-elasticsearch.password: "KIBANA_SYSTEM_PASSWORD"
-
-# ---------------------------------------
-# Elasticsearch TLS Trust
-# ---------------------------------------
-
-elasticsearch.ssl.truststore.path: /etc/kibana/certs/elastic-stack-ca.p12
-```
-
-
-### Configuration Explanation
-
-| Setting                | Purpose                            |
-| ---------------------- | ---------------------------------- |
-| `server.host: 0.0.0.0` | Allows remote browser access       |
-| `elasticsearch.hosts`  | Elasticsearch HTTPS endpoints      |
-| `kibana_system`        | Internal Kibana service account    |
-| `truststore.path`      | Trust Elasticsearch CA certificate |
-
----
-
-## Verify Elasticsearch HTTPS Connectivity
-
-Before starting Kibana, verify HTTPS communication from the Kibana server.
-
-Run on `kibana-node`:
-
-```bash
-curl -k -u elastic https://es-node-1:9200
-```
-
-Expected output:
-
-```json
-{
-  "name" : "es-node-1",
-  "cluster_name" : "elk-prod-cluster",
-  ...
-}
-```
-
----
-
-## Better Production Verification
-
-Instead of `-k`, use trusted CA verification:
-
-```bash
-curl --cacert /etc/kibana/certs/http_ca.crt \
--u elastic https://es-node-1:9200
-```
+>[!Note]
+We will add this **line later** when we prepare `kibana.yml` file.
 
 
 ---
 
 ## Kibana browser trust configuration
-
 
 ### Create Kibana CA
 
@@ -317,9 +287,9 @@ curl --cacert /etc/kibana/certs/http_ca.crt \
   kibana-ca.key   (private - KEEP SAFE)
   ```
 
----
+#
 
-### Create Kibana Server Certificate
+### Create Kibana Certificate
 
 - On CA machine:
 
@@ -394,68 +364,161 @@ curl --cacert /etc/kibana/certs/http_ca.crt \
   ```
 
 
+==================================================
+
+## Create Kibana System User Password
+
+Kibana should use the built-in `kibana_system` user for Elasticsearch communication.
+
+- Run on ONE Elasticsearch node:
+
+  ```bash
+  /usr/share/elasticsearch/bin/elasticsearch-reset-password \
+  -u kibana_system
+  ```
+
+- Example output:
+
+  ```text
+  New value: xxxxxxxxxxxxx
+  ```
+
+  Save this password securely.
+
+---
+
+## Configure Kibana
+
+### Edit Kibana Configuration
+
+Run on `kibana-node`:
+
+```bash
+vi /etc/kibana/kibana.yml
+```
+
+
+### Configure Kibana Secure Settings
+
+Add or modify:
+
+```yaml
+# ---------------------------------------
+# Kibana Server
+# ---------------------------------------
+
+server.port: 5601
+server.host: "0.0.0.0"
+
+server.name: "kibana-node"
+
+# ---------------------------------------
+# Elasticsearch Connection
+# ---------------------------------------
+
+elasticsearch.hosts:
+  - "https://es-node-1:9200"
+  - "https://es-node-2:9200"
+  - "https://es-node-3:9200"
+
+# ---------------------------------------
+# Kibana Authentication
+# ---------------------------------------
+
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "KIBANA_SYSTEM_PASSWORD"
+
+# ---------------------------------------
+# Elasticsearch TLS Trust
+# ---------------------------------------
+
+elasticsearch.ssl.truststore.path: /etc/kibana/certs/elastic-stack-ca.p12
+```
+
+
+### Configuration Explanation
+
+| Setting                | Purpose                            |
+| ---------------------- | ---------------------------------- |
+| `server.host: 0.0.0.0` | Allows remote browser access       |
+| `elasticsearch.hosts`  | Elasticsearch HTTPS endpoints      |
+| `kibana_system`        | Internal Kibana service account    |
+| `truststore.path`      | Trust Elasticsearch CA certificate |
 
 
 ---
+
 ## Firewall Rules
 
-On Kibana Node:
+- On Kibana Node:
 
-```bash
-firewall-cmd --permanent --add-port=5601/tcp
-firewall-cmd --reload
-```
+  ```bash
+  firewall-cmd --permanent --add-port=5601/tcp
+  firewall-cmd --reload
+  ```
 
-On Elasticsearch Node:
+- On Elasticsearch Node:
 
-```bash
-firewall-cmd --permanent --add-port=9200/tcp
-firewall-cmd --reload
-```
+  ```bash
+  firewall-cmd --permanent --add-port=9200/tcp
+  firewall-cmd --reload
+  ```
+
+---
+## Better Production Verification before Start Kibana
+
+- Use trusted CA verification:
+
+  ```bash
+  curl --cacert /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem \
+  -u elastic https://es-node-1:9200
+  ```
 
 ---
 
-## Start Kibana Service
+## Start & Verify Kibana Service
 
-Reload Systemd
+- Reload Systemd
 
-```bash
-systemctl daemon-reload
-```
+  ```bash
+  systemctl daemon-reload
+  ```
 
-Enable Kibana Service
+- Enable Kibana Service
 
-```bash
-systemctl enable kibana
-```
+  ```bash
+  systemctl enable kibana
+  ```
 
-Start Kibana
+- Start Kibana
 
-```bash
-systemctl start kibana
-```
+  ```bash
+  systemctl start kibana
+  ```
 
-Verify Kibana Service status:
+#
 
-```bash
-systemctl status kibana
-```
+- Verify Kibana Service status:
 
-Expected:
+  ```bash
+  systemctl status kibana
+  ```
 
-```text
-active (running)
-```
+  Expected:
+
+  ```text
+  active (running)
+  ```
 
 ---
 
 ## Monitor Kibana Logs
 
-If Kibana fails:
+- If Kibana fails:
 
-```bash
-journalctl -u kibana -f
-```
+  ```bash
+  journalctl -u kibana -f
+  ```
 
 ---
 
@@ -463,37 +526,39 @@ journalctl -u kibana -f
 
 ### Step 1 — Browser → Kibana
 
-```text
-https://kibana-node:5601
-```
+- Paste this URL on Browser:
 
-Check:
+  ```text
+  https://kibana-node:5601
+  ```
 
-* No certificate warning
-* Valid HTTPS lock
+- Check:
+
+  * No certificate warning
+  * Valid HTTPS lock
 
 #
 
 ### Step 2 — Kibana → Elasticsearch
 
-Check logs:
+- Check logs:
 
-```bash
-journalctl -u kibana -f
-```
+  ```bash
+  journalctl -u kibana -f
+  ```
 
-Expected:
+- Expected:
 
-```text
-Connected to Elasticsearch cluster
-TLS handshake successful
-```
+  ```text
+  Connected to Elasticsearch cluster
+  TLS handshake successful
+  ```
 
 ---
 
 ## Verify Kibana ↔ Elasticsearch Integration
 
-Inside Kibana:
+**Inside Kibana:**
 
 * Open:
 
@@ -501,11 +566,11 @@ Inside Kibana:
   * Monitoring
   * Dev Tools
 
-Verify:
+- Verify:
 
-* cluster status
-* node visibility
-* index visibility
+  * cluster status
+  * node visibility
+  * index visibility
 
 ---
 
