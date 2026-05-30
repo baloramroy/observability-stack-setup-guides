@@ -174,13 +174,13 @@ root@192.168.0.123:/etc/kibana/certs/elastic-certs/
   ```bash
   openssl pkcs12 \
   -in /etc/elasticsearch/certs/ca/elastic-stack-ca.p12 \
-  -clcerts -nokeys \
+  -cacerts -nokeys \
   -out /etc/elasticsearch/certs/ca/elasticsearch-ca.pem
   ```
 
 - Explanation:
 
-  - clcerts → export certificates only
+  - cacerts → export certificates only
   - nokeys → NEVER export private keys
 
 - It will ask:
@@ -432,7 +432,8 @@ elasticsearch.password: "KIBANA_SYSTEM_PASSWORD"
 # Elasticsearch TLS Trust
 # ---------------------------------------
 
-elasticsearch.ssl.truststore.path: /etc/kibana/certs/elastic-stack-ca.p12
+elasticsearch.ssl.certificateAuthorities:
+  - /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem
 ```
 
 
