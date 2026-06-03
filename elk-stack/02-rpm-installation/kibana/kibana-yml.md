@@ -6,24 +6,15 @@ This SOP describes how to securely **integrate Kibana** with an **existing secur
 
 This document covers:
 
-* Elasticsearch CA trust configuration
-* Kibana HTTPS configuration
-* Kibana authentication configuration
-* Kibana keystore configuration
-* Kibana encryption keys
-* DNS and certificate validation
-* Firewall configuration
-* Kibana startup and verification
-* Kibana ↔ Elasticsearch secure communication validation
-
-This SOP assumes:
-
-* Kibana package is already installed
-* Elasticsearch cluster is already operational
-* Elasticsearch security is enabled
-* Elasticsearch HTTP TLS is already configured
-* Elasticsearch transport TLS is already configured
-* Elasticsearch certificates are already generated
+* Elasticsearch **CA trust** configuration
+* Kibana **HTTPS** configuration
+* Kibana **authentication** configuration
+* Kibana **keystore** configuration
+* Kibana **encryption** keys
+* **DNS and certificate** validation
+* **Firewall** configuration
+* Kibana **startup and verification**
+* Kibana ↔ Elasticsearch **secure communication** validation
 
 This SOP does NOT cover:
 
@@ -31,6 +22,7 @@ This SOP does NOT cover:
 * Elasticsearch installation
 * Elasticsearch cluster creation
 * Elasticsearch TLS certificate generation
+
 
 ---
 
@@ -71,33 +63,33 @@ This SOP does NOT cover:
 
 ## TLS Trust Model
 
-Understanding certificate trust is critical.
+**Understanding certificate trust is critical.**
 
-### Browser → Kibana
+### ⬛ Browser → Kibana
 
-Kibana acts as a server.
-
-Requirements:
-
-* Kibana presents a server certificate.
-* Browser validates the Kibana certificate.
-* Browser trusts the CA that signed the Kibana certificate.
-
-#
-
-### Kibana → Elasticsearch
-
-Kibana acts as a client.
+Kibana acts as a **server**.
 
 Requirements:
 
-* Elasticsearch presents a server certificate.
-* Kibana validates the Elasticsearch certificate.
-* Kibana trusts the Elasticsearch CA.
+* **Kibana** presents a **server** certificate.
+* **Browser** validates the **Kibana certificate**.
+* **Browser** trusts the **CA** that **signed the Kibana certificate**.
 
 #
 
-### TLS Role Summary
+### ⬛ Kibana → Elasticsearch
+
+Kibana acts as a **client**.
+
+Requirements:
+
+* **Elasticsearch** presents a **server** certificate.
+* **Kibana** validates the **Elasticsearch certificate**.
+* Kibana **trusts** the **Elasticsearch CA**.
+
+#
+
+### ⬛ TLS Role Summary
 
 | Component     | Role            | Server Certificate | CA Trust Required |
 | ------------- | --------------- | ------------------ | ----------------- |
@@ -119,7 +111,7 @@ Before starting this SOP, ensure:
 - Kibana **HTTPS certificate** has already been generated
 - Kibana **private key** has already been generated
 - Elasticsearch **CA certificate** is available
-
+  
 ---
 
 ## Elasticsearch Prerequisites Validation
@@ -128,9 +120,11 @@ Before proceeding, verify:
 
 ## Cluster Health
 
-```bash
-curl -k -u elastic:pass https://es-node-1:9200/_cluster/health?pretty
-```
+- Run:
+
+  ```bash
+  curl -k -u elastic:pass https://es-node-1:9200/_cluster/health?pretty
+  ```
 
 - Expected:
 
@@ -144,9 +138,11 @@ curl -k -u elastic:pass https://es-node-1:9200/_cluster/health?pretty
 
 ## Security Status
 
-```bash
-curl -k -u elastic:pass https://es-node-1:9200
-```
+- Run:
+
+  ```bash
+  curl -k -u elastic:pass https://es-node-1:9200
+  ```
 
 - Expected:
 
@@ -156,17 +152,17 @@ curl -k -u elastic:pass https://es-node-1:9200
   }
   ```
 
-Successful authentication confirms:
+- Successful authentication confirms:
 
-* HTTPS is working
-* Security is enabled
-* Elasticsearch is accessible
+  * HTTPS is working
+  * Security is enabled
+  * Elasticsearch is accessible
 
 ---
 
 ## Required Certificate Artifacts
 
-This SOP assumes the following files are already available from Appendix A or Appendix B.
+This SOP assumes the following files are already available from Kibana TLS generation SOP.
 
   - kibana-server.crt
   - kibana-server.key
@@ -179,7 +175,7 @@ This SOP assumes the following files are already available from Appendix A or Ap
 - Create certificate directories.
 
   ```bash
-  mkdir -p /etc/kibana/certs/{elastic-certs,kibana-certs}
+  mkdir -p /etc/kibana/certs/{elastic-ca,kibana-certs}
   ```
 
 - Expected layout:
@@ -187,7 +183,7 @@ This SOP assumes the following files are already available from Appendix A or Ap
   ```text
   /etc/kibana/certs/
 
-  ├── elastic-certs/
+  ├── elastic-ca/
   │   └── elasticsearch-ca.pem
   │
   └── kibana-certs/
@@ -205,35 +201,34 @@ Kibana must trust the **CA** that **signed Elasticsearch HTTPs** certificates.
 
   ```bash
   scp /etc/elasticsearch/certs/zipcert/kibana/elasticsearch-ca.pem \
-  root@192.168.0.123:/etc/kibana/certs/elastic-certs/
+  root@192.168.0.123:/etc/kibana/certs/elastic-ca/
   ```
 
 - Only the **public CA certificate** should be copied.
 
-- Never copy:
-
-  * CA private keys
-  * Elasticsearch private keys
-  * PKCS12 bundles containing private keys
 
 >[!Note]
-If `elasticsearch-ca.pem` is unavailable, refer to the **Elasticsearch Certificate Management SOP**.
+If `elasticsearch-ca.pem` is unavailable, refer to the -> [03-elasticsearch-tls-certificate-generation.md](../elasticsearch/03-elasticsearch-tls-certificate-generation.md) SOP.
 
 ---
 
 ## Deploy Kibana HTTPS Certificate
 
-- Copy files from `es-node-1`:
+- Copy Certificate from `es-node-1`:
 
   ```bash
   scp /root/kibana-certutil/kibana-cert/kibana-server.crt root@192.168.0.123:/etc/kibana/certs/kibana-certs/
+  ```
 
+- Copy Certificate Keys from `es-node-1`:
+
+  ```bash
   scp /root/kibana-certutil/kibana-cert/kibana-server.key root@192.168.0.123:/etc/kibana/certs/kibana-certs/
   ```
   
 ---
 
-## Set Ownership
+## Set Ownership of Copied Certificate
 
 Run on `kibana-node`:
 
@@ -253,7 +248,9 @@ Run on `kibana-node`:
 - Validate Permissions
 
   ```bash
-  namei -l /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem
+  namei -l /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem
+  namei -l /etc/kibana/certs/kibana-certs/kibana-server.crt
+  namei -l /etc/kibana/certs/kibana-certs/kibana-server.key
   ```
 
   >Verify the kibana group can access the certificate.
@@ -264,13 +261,14 @@ Run on `kibana-node`:
 
 For browsers to trust **Kibana HTTPS**, they must **trust the CA** that signed the **Kibana server certificate**.
 
+#
 
-## Windows
+### Windows
 
 - Import:
 
   ```text
-  kibana-ca.crt
+  elasticsearch-ca.pem
   ```
 
 - Into:
@@ -291,14 +289,14 @@ For browsers to trust **Kibana HTTPS**, they must **trust the CA** that signed t
   - Right-click on **Certificates**, go to **All Tasks**, and select **Import....**
   - Click **Next**, browse to your **certificate** file, and follow the **prompts**. Ensure the wizard places it in the `Trusted Root Certification Authorities store`.
 
----
+#
 
-## RHEL / Rocky / AlmaLinux
+### RHEL / Rocky / AlmaLinux
 
 - Copy Certificate in this path:
 
   ```bash
-  cp kibana-ca.crt \
+  cp /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem \
   /etc/pki/ca-trust/source/anchors/
   ```
 
@@ -308,13 +306,13 @@ For browsers to trust **Kibana HTTPS**, they must **trust the CA** that signed t
   update-ca-trust
   ```
 
----
+#
 
-## Ubuntu
+### Ubuntu
 - Copy Certificate in this path:
 
   ```bash
-  cp kibana-ca.crt \
+  cp /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem \
   /usr/local/share/ca-certificates/
   ```
 
@@ -475,7 +473,7 @@ kibana keystore
 
 ```yaml
 elasticsearch.ssl.certificateAuthorities:
-  - /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem
+  - /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem
 ```
 
 
@@ -538,7 +536,7 @@ Validate Elasticsearch certificate trust.
 
   ```bash
   curl \
-  --cacert /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem \
+  --cacert /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem \
   -u elastic \
   https://es-node-1:9200
   ```
@@ -558,7 +556,7 @@ Validate Elasticsearch certificate trust.
   ```bash
   openssl s_client \
   -connect es-node-1:9200 \
-  -CAfile /etc/kibana/certs/elastic-certs/elasticsearch-ca.pem
+  -CAfile /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem
   ```
 
 - Expected:

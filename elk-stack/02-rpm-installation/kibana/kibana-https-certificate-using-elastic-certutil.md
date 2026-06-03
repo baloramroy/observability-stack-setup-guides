@@ -40,7 +40,7 @@ Browser → HTTPS → Kibana (certutil-generated TLS)
   ```text
   elastic-stack-ca.p12
       ├── Elasticsearch HTTP/Transport TLS
-      └── Kibana HTTPS certificate
+      └── Kibana to Elasticsearch HTTPS certificate
   ```
 
 > No separate Kibana CA is required.
@@ -53,11 +53,9 @@ Before proceeding ensure:
 
 * `Elasticsearch cluster` is installed
 * `elasticsearch-certutil` is available
-* The Elastic Stack CA (elastic-stack-ca.p12) must already exist.
-  
-  ```
-  This CA was previously created during Elasticsearch TLS certificate generation.
-  ```
+* The Elastic Stack CA `elastic-stack-ca.p12` must already exist.
+  - This **CA** was previously created during **Elasticsearch TLS certificate generation**.
+  - Reference SOP: [03-elasticsearch-tls-certificate-generation.md](../elasticsearch/03-elasticsearch-tls-certificate-generation.md)
 
 * `Kibana` is installed
 * Kibana server `IP and hostname` are known
@@ -77,11 +75,12 @@ Before proceeding ensure:
 
 ## Create Kibana Instance Definition File
 
-- This file defines all Kibana endpoints and SAN entries.
+- From the `/root/kibana-certutil/` directory, run:
 
   ```bash
   vim kibana-instance.yml
   ```
+  **Note:** This file defines all Kibana endpoints and SAN entries.
 
 - Example Configuration
 
@@ -288,18 +287,6 @@ Verify:
 * Easier renewal process
 * Lower human error risk
 * Production recommended
-
----
-
-## Comparison Summary (OpenSSL vs Certutil)
-
-| Feature               | OpenSSL | Certutil |
-| --------------------- | ------- | -------- |
-| Control               | High    | Medium   |
-| Complexity            | High    | Low      |
-| Elastic compatibility | Medium  | High     |
-| Recommended for ELK   | No      | Yes      |
-| Production usage      | Rare    | Common   |
 
 ---
 
