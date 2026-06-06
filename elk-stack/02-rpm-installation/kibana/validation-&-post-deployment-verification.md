@@ -1,6 +1,6 @@
 # Kibana Validation & Post-Deployment Verification
 
-## 1. Purpose of This SOP
+## Purpose of This SOP
 
 This SOP validates that Kibana has been successfully integrated with the secured Elasticsearch cluster and is operating correctly.
 
@@ -26,7 +26,7 @@ This SOP assumes:
 
 ---
 
-## 2. Validation Objectives
+## Validation Objectives
 
 Successful completion of this SOP confirms:
 
@@ -39,7 +39,7 @@ Successful completion of this SOP confirms:
 
 ---
 
-## 3. Environment Information
+## Environment Information
 
 | Hostname    | IP Address    | Role          |
 | ----------- | ------------- | ------------- |
@@ -50,193 +50,193 @@ Successful completion of this SOP confirms:
 
 ---
 
-## 4. Verify Kibana Service Status
+## Verify Kibana Service Status
 
-Run on the Kibana server.
+- Run on the Kibana server.
 
-```bash
-systemctl status kibana
-```
+  ```bash
+  systemctl status kibana
+  ```
 
-Expected:
+- Expected:
 
-```text
-active (running)
-```
+  ```text
+  active (running)
+  ```
 
-Verify:
+- Verify:
 
-* Service is running
-* No startup failures
-* No certificate-related errors
-
----
-
-## 5. Verify Kibana Service Enablement
-
-Verify Kibana starts automatically after reboot.
-
-```bash
-systemctl is-enabled kibana
-```
-
-Expected:
-
-```text
-enabled
-```
+  * Service is running
+  * No startup failures
+  * No certificate-related errors
 
 ---
 
-## 6. Verify Kibana Listening Port
+## Verify Kibana Service Enablement
 
-Verify Kibana is listening on HTTPS port 5601.
+- Verify Kibana starts automatically after reboot.
 
-```bash
-ss -tlnp | grep 5601
-```
+  ```bash
+  systemctl is-enabled kibana
+  ```
 
-Expected:
+- Expected:
 
-```text
-LISTEN 0 511 0.0.0.0:5601
-```
+  ```text
+  enabled
+  ```
 
-or
+---
 
-```text
-LISTEN 0 511 [::]:5601
-```
+## Verify Kibana Listening Port
+
+- Verify Kibana is listening on HTTPS port 5601.
+
+  ```bash
+  ss -tlnp | grep 5601
+  ```
+
+- Expected:
+
+  ```text
+  LISTEN 0 511 0.0.0.0:5601
+  ```
+
+  or
+
+  ```text
+  LISTEN 0 511 [::]:5601
+  ```
 
 
 ---
 
-## 10. Verify Kibana HTTPS Certificate
+## Verify Kibana HTTPS Certificate
 
-Run:
+- Run:
 
-```bash
-openssl x509 \
--in /etc/kibana/certs/kibana-certs/kibana-server.crt \
--text -noout
-```
+  ```bash
+  openssl x509 \
+  -in /etc/kibana/certs/kibana-certs/kibana-server.crt \
+  -text -noout
+  ```
 
-Verify:
+- Verify:
 
-* Subject
-* Issuer
-* SAN entries
-* Validity period
-* Key usage
-* Extended key usage
-
----
-
-## 11. Verify Certificate Expiration
-
-Run:
-
-```bash
-openssl x509 \
--enddate \
--noout \
--in /etc/kibana/certs/kibana-certs/kibana-server.crt
-```
-
-Example:
-
-```text
-notAfter=Dec 31 23:59:59 2028 GMT
-```
-
-Verify:
-
-* Certificate has not expired
-* Remaining validity period is acceptable
+  * Subject
+  * Issuer
+  * SAN entries
+  * Validity period
+  * Key usage
+  * Extended key usage
 
 ---
 
-## 12. Verify Certificate and Private Key Match
+## Verify Certificate Expiration
 
-Certificate:
+- Run:
 
-```bash
-openssl x509 \
--noout \
--modulus \
--in /etc/kibana/certs/kibana-certs/kibana-server.crt | openssl md5
-```
+  ```bash
+  openssl x509 \
+  -enddate \
+  -noout \
+  -in /etc/kibana/certs/kibana-certs/kibana-server.crt
+  ```
 
-Private Key:
+- Example:
 
-```bash
-openssl rsa \
--noout \
--modulus \
--in /etc/kibana/certs/kibana-certs/kibana-server.key | openssl md5
-```
+  ```text
+  notAfter=Dec 31 23:59:59 2028 GMT
+  ```
 
-Expected:
+- Verify:
 
-```text
-MD5(stdin)= xxxxxxxxxxxx
-MD5(stdin)= xxxxxxxxxxxx
-```
-
-Both hashes must match.
+  * Certificate has not expired
+  * Remaining validity period is acceptable
 
 ---
 
-## 13. Verify Kibana Health API
+## Verify Certificate and Private Key Match
 
-Run:
+- Certificate:
 
-```bash
-curl -k https://kibana-node:5601/api/status
-```
+  ```bash
+  openssl x509 \
+  -noout \
+  -modulus \
+  -in /etc/kibana/certs/kibana-certs/kibana-server.crt | openssl md5
+  ```
 
-Expected response:
+- Private Key:
 
-```json
-{
-  "overall": {
-    "level": "available"
+  ```bash
+  openssl rsa \
+  -noout \
+  -modulus \
+  -in /etc/kibana/certs/kibana-certs/kibana-server.key | openssl md5
+  ```
+
+- Expected:
+
+  ```text
+  MD5(stdin)= xxxxxxxxxxxx
+  MD5(stdin)= xxxxxxxxxxxx
+  ```
+
+  Both hashes must match.
+
+---
+
+## Verify Kibana Health API
+
+- Run:
+
+  ```bash
+  curl -k https://kibana-node:5601/api/status
+  ```
+
+- Expected response:
+
+  ```json
+  {
+    "overall": {
+      "level": "available"
+    }
   }
-}
-```
+  ```
 
-Verify:
+- Verify:
 
-* Status API responds
-* Overall status is available
-
----
-
-## 14. Verify Kibana Server Response
-
-Run:
-
-```bash
-curl -Ik https://kibana-node:5601
-```
-
-Expected:
-
-```text
-HTTP/1.1 302 Found
-```
-
-or
-
-```text
-HTTP/1.1 200 OK
-```
-
-This confirms Kibana web service is responding.
+  * Status API responds
+  * Overall status is available
 
 ---
 
-## 15. Review Kibana Startup Logs
+## Verify Kibana Server Response
+
+- Run:
+
+  ```bash
+  curl -Ik https://kibana-node:5601
+  ```
+
+- Expected:
+
+  ```text
+  HTTP/1.1 302 Found
+  ```
+
+  or
+
+  ```text
+  HTTP/1.1 200 OK
+  ```
+
+  This confirms Kibana web service is responding.
+
+---
+
+## Review Kibana Startup Logs
 
 View recent logs:
 
@@ -259,7 +259,7 @@ Verify logs contain:
 
 ---
 
-## 16. Monitor Kibana Logs in Real Time
+## Monitor Kibana Logs in Real Time
 
 Run:
 
@@ -276,7 +276,7 @@ Observe for:
 
 ---
 
-## 17. Browser Access Validation
+## Browser Access Validation
 
 Open:
 
@@ -291,21 +291,10 @@ Verify:
 * No browser certificate warnings
 * Page loads successfully
 
----
-
-## 18. Authentication Validation
-
-Login using a valid Elasticsearch user account.
-
-Verify:
-
-* Login succeeds
-* No authentication errors occur
-* Kibana dashboard loads
 
 ---
 
-## 19. Verify Kibana ↔ Elasticsearch Integration
+## Verify Kibana ↔ Elasticsearch Integration
 
 After login verify access to:
 
@@ -320,109 +309,109 @@ Successful access confirms Kibana can communicate with Elasticsearch.
 
 ---
 
-## 20. Dev Tools Validation
+## Dev Tools Validation
 
-Navigate:
+- Navigate:
 
-```text
-Dev Tools
-```
+  ```text
+  Dev Tools
+  ```
 
-Run:
+- Run:
 
-```json
-GET /
-```
+  ```json
+  GET /
+  ```
 
-Expected:
+- Expected:
 
-```json
-{
-  "name": "es-node-1"
-}
-```
+  ```json
+  {
+    "name": "es-node-1"
+  }
+  ```
 
-This confirms Elasticsearch API communication.
-
----
-
-## 21. Cluster Health Validation
-
-Run:
-
-```json
-GET _cluster/health
-```
-
-Expected:
-
-```json
-{
-  "status": "green"
-}
-```
-
-Verify:
-
-* Cluster status is green
-* Cluster information is returned successfully
+  This confirms Elasticsearch API communication.
 
 ---
 
-## 22. Index Visibility Validation
+## Cluster Health Validation
 
-Run:
+- Run:
 
-```json
-GET _cat/indices?v
-```
+  ```json
+  GET _cluster/health
+  ```
 
-Verify:
+- Expected:
 
-* Indices are listed
-* No authorization errors occur
+  ```json
+  {
+    "status": "green"
+  }
+  ```
 
----
+- Verify:
 
-## 23. Verify Kibana Saved Objects Service
-
-Navigate:
-
-```text
-Stack Management → Saved Objects
-```
-
-Verify:
-
-* Saved Objects page loads
-* No encryption key warnings appear
+  * Cluster status is green
+  * Cluster information is returned successfully
 
 ---
 
-## 24. Verify Encryption Key Configuration
+## Index Visibility Validation
+
+- Run:
+
+  ```json
+  GET _cat/indices?v
+  ```
+
+- Verify:
+
+  * Indices are listed
+  * No authorization errors occur
+
+---
+
+## Verify Kibana Saved Objects Service
+
+- Navigate:
+
+  ```text
+  Stack Management → Saved Objects
+  ```
+
+- Verify:
+
+  * Saved Objects page loads
+  * No encryption key warnings appear
+
+---
+
+## Verify Encryption Key Configuration
 
 Review Kibana logs.
 
-Verify absence of messages similar to:
+- Verify absence of messages similar to:
 
-```text
-Generating a random key
-```
+  ```text
+  Generating a random key
+  ```
 
-or
+  or
 
-```text
-Encryption key is not set
-```
+  ```text
+  Encryption key is not set
+  ```
 
-Successful validation confirms:
+- Successful validation confirms:
 
-* Encryption keys are configured correctly
-* Keys persist across restarts
+  * Encryption keys are configured correctly
+  * Keys persist across restarts
 
 ---
 
-## 25. Common Troubleshooting
+## Common Troubleshooting
 
 | Problem                            | Possible Cause                     |
 | ---------------------------------- | ---------------------------------- |
@@ -439,29 +428,29 @@ Successful validation confirms:
 
 ---
 
-## 26. Troubleshooting Log Locations
+## Troubleshooting Log Locations
 
-### Kibana Logs
+- Kibana Logs
 
-```text
-/var/log/kibana/
-```
+  ```text
+  /var/log/kibana/
+  ```
 
-or
+  or
 
-```bash
-journalctl -u kibana
-```
+  ```bash
+  journalctl -u kibana
+  ```
 
-### Elasticsearch Logs
+- Elasticsearch Logs
 
-```text
-/var/log/elasticsearch/
-```
+  ```text
+  /var/log/elasticsearch/
+  ```
 
 ---
 
-## 27. Operational Readiness Checklist
+## Operational Readiness Checklist
 
 Verify all items below:
 
@@ -484,7 +473,7 @@ Verify all items below:
 
 ---
 
-## 28. SOP Completion Summary
+## SOP Completion Summary
 
 This SOP validated:
 
@@ -500,4 +489,6 @@ This SOP validated:
 * Cluster communication
 * Operational readiness
 
-Successful completion confirms Kibana is securely integrated with Elasticsearch and ready for production use.
+>Successful completion confirms Kibana is securely integrated with Elasticsearch and ready for production use.
+
+---

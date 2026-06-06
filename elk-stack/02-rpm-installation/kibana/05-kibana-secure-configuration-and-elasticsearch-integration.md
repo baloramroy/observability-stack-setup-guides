@@ -111,6 +111,7 @@ Before starting this SOP, ensure:
 - Kibana **HTTPS certificate** has already been generated
 - Kibana **private key** has already been generated
 - Elasticsearch **CA certificate** is available
+- **Authentication** method ready (SOP-4)
   
 ---
 
@@ -193,7 +194,7 @@ This SOP assumes the following files are already available from Kibana TLS gener
 
 ---
 
-## Deploy Elasticsearch CA Trust
+## Deploy Elasticsearch CA Certificate
 
 Kibana must trust the **CA** that **signed Elasticsearch HTTPs** certificates.
 
@@ -265,7 +266,7 @@ For browsers to trust **Kibana HTTPS**, they must **trust the CA** that signed t
 
 ### Windows
 
-- Import:
+- Import the CA certificate that signed the Kibana server certificate.:
 
   ```text
   elasticsearch-ca.pem
@@ -324,181 +325,125 @@ For browsers to trust **Kibana HTTPS**, they must **trust the CA** that signed t
 
 ---
 
-## Create Kibana Authentication Credentials
-
-Kibana requires authentication to communicate with Elasticsearch.
-
-
-### Reset kibana_system Password
-
-- Run on any Elasticsearch node.
-
-  ```bash
-  /usr/share/elasticsearch/bin/elasticsearch-reset-password \
-  -u kibana_system
-  ```
-
-- Example:
-
-  ```text
-  New value: XXXXXXXXXXXXX
-  ```
-
-Store this password securely.
-
----
-
-## Create Kibana Keystore
-
-Sensitive values should never be stored directly inside `kibana.yml`.
-
-
-### Create Keystore
-
-```bash
-/usr/share/kibana/bin/kibana-keystore create
-```
-
-
-### Add Kibana Password
-
-```bash
-/usr/share/kibana/bin/kibana-keystore add elasticsearch.password
-```
-
-Enter:
-
-```text
-kibana_system password
-```
-
-
-### Verify Keystore Exists
-
-```bash
-ls -l /etc/kibana/
-```
-
-Expected:
-
-```text
-kibana.keystore
-```
-
----
-
 
 ## Generate Kibana Encryption Keys
 
-Kibana requires encryption keys for secure operation.
+- Kibana requires encryption keys for secure operation.
+- These keys must remain constant across restarts.
 
-These keys must remain constant across restarts.
+
+### ⬛ Generate Keys
+
+- Run:
+
+  ```bash
+  /usr/share/kibana/bin/kibana-encryption-keys generate
+  ```
+
+- Example output:
+
+  ```yaml
+  xpack.security.encryptionKey: keys
+  xpack.encryptedSavedObjects.encryptionKey: keys
+  xpack.reporting.encryptionKey: keys
+  ```
+
+- Save the generated values securely.
+- If this changes, all sessions become invalid
 
 #
 
-## Generate Keys
+### ⬛ Real-World Example
+  
+- Without encryptionKey:
 
-```bash
-/usr/share/kibana/bin/kibana-encryption-keys generate
-```
+  - User logs in via HTTPS (TLS works ✅)
+  - Kibana stores session in cookie (unencrypted cookie ❌)
+  - Attacker steals cookie via XSS/browser cache
+  - Attacker can impersonate user without credentials
 
-Example output:
+- With encryptionKey:
 
-```yaml
-xpack.security.encryptionKey:
-xpack.encryptedSavedObjects.encryptionKey:
-xpack.reporting.encryptionKey:
-```
-
-Save the generated values securely.
+  - Session data encrypted before cookie creation
+  - Cookie theft yields unusable encrypted blob
+  - Key only exists on Kibana server
 
 ---
 
-## Configure Kibana.yml
+## Configure `Kibana.yml` File
 
-Edit:
+Edit `kibana.yml`:
 
 ```bash
-vi /etc/kibana/kibana.yml
+vim /etc/kibana/kibana.yml
 ```
 
-
-
-### Kibana Server Configuration
+Insert all of this:
 
 ```yaml
+
+### Kibana Server Configuration
 server.port: 5601
-
 server.host: "0.0.0.0"
-
 server.name: "kibana-node"
-```
 
 
 ### Enable HTTPS
-
-```yaml
 server.ssl.enabled: true
-
 server.ssl.certificate: /etc/kibana/certs/kibana-certs/kibana-server.crt
-
 server.ssl.key: /etc/kibana/certs/kibana-certs/kibana-server.key
-```
 
 
 ### Elasticsearch Connection
-
-```yaml
 elasticsearch.hosts:
   - "https://es-node-1:9200"
   - "https://es-node-2:9200"
   - "https://es-node-3:9200"
-```
 
 
-### Authentication
-
-```yaml
-elasticsearch.username: "kibana_system"
-```
-
-Password is stored in:
-
-```text
-kibana keystore
-```
-
+# Authentication is defined in SOP-4
+# Configure only ONE authentication method.
+# Do not enable both simultaneously.
+# elasticsearch.serviceAccountToken: ""
+# OR
+# elasticsearch.username/password (via keystore)
 
 ### Elasticsearch CA Trust
-
-```yaml
 elasticsearch.ssl.certificateAuthorities:
   - /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem
-```
 
 
 ### Certificate Verification
-
-```yaml
 elasticsearch.ssl.verificationMode: full
-```
-
-`full` verifies:
-
-* Certificate validity
-* CA trust
-* Hostname validation
 
 
 ### Kibana Encryption Keys
-
-```yaml
 xpack.security.encryptionKey: "<generated-key>"
-
 xpack.encryptedSavedObjects.encryptionKey: "<generated-key>"
-
 xpack.reporting.encryptionKey: "<generated-key>"
+
 ```
+---
+
+## Validate Configuration Syntax
+
+- Run:
+
+  ```bash
+  /usr/share/kibana/bin/kibana --config /etc/kibana/kibana.yml --verbose
+  or
+  /usr/share/kibana/bin/kibana
+  ```
+
+  > Watch for configuration errors.
+
+- This catches:
+
+  - YAML mistakes
+  - wrong file paths
+  - invalid settings
+
+  > before systemd startup.
 
 ---
 
@@ -556,6 +501,7 @@ Validate Elasticsearch certificate trust.
   ```bash
   openssl s_client \
   -connect es-node-1:9200 \
+  -servername es-node-1 \
   -CAfile /etc/kibana/certs/elastic-ca/elasticsearch-ca.pem
   ```
 
@@ -590,6 +536,21 @@ Validate Elasticsearch certificate trust.
   firewall-cmd --reload
   ```
 
+---
+
+## Pre-Startup Validation Checklist
+
+- **Verify the following:**
+
+  - ✓ kibana-server.crt exists
+  - ✓ kibana-server.key exists
+  - ✓ elasticsearch-ca.pem exists
+  - ✓ Kibana can resolve Elasticsearch hostnames
+  - ✓ Authentication method has been configured
+  - ✓ Kibana encryption keys configured
+  - ✓ kibana.yml syntax reviewed
+
+- **After verify this start Kibana**.
 ---
 
 ## Start Kibana Service
@@ -628,24 +589,6 @@ active (running)
 
 ---
 
-
-## Production Recommendations
-
-For production deployments:
-
-* Use DNS instead of `/etc/hosts`
-* Use certificates containing proper SAN entries
-* Store secrets in Kibana keystore
-* Regularly rotate certificates
-* Regularly rotate service credentials
-* Use NTP time synchronization
-* Restrict certificate file permissions
-* Use dedicated monitoring
-* Use load balancers for high availability
-* Use service account tokens instead of passwords when organizational standards permit
-
----
-
 ## Summary
 
 This SOP configured:
@@ -661,3 +604,4 @@ This SOP configured:
 
 The next documents in this series are:
 
+---
