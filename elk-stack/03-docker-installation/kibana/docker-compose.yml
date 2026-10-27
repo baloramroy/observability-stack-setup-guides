@@ -1,0 +1,29 @@
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION:-8.17.2}
+    container_name: kibana
+    environment:
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - ./data:/usr/share/kibana/data
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    networks:
+      - elastic-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601/api/status | grep -q 'HTTP/1.1 200 OK'"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+networks:
+  elastic-net:
+    external: true

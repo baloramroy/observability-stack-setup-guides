@@ -1,0 +1,12 @@
+# Environment files
+**/.env
+
+# Elasticsearch runtime data and logs
+elasticsearch/data/*
+!elasticsearch/data/.gitkeep
+elasticsearch/logs/*
+!elasticsearch/logs/.gitkeep
+
+# Kibana runtime data
+kibana/data/*
+!kibana/data/.gitkeep

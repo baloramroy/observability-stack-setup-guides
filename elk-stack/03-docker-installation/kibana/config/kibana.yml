@@ -1,0 +1,18 @@
+server.name: kibana
+server.host: "0.0.0.0"
+
+# Elasticsearch Connection
+elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+
+# ---------------------------------- Security Options ----------------------------------
+# When xpack.security.enabled is false in Elasticsearch, no authentication is needed.
+# If you enable security (xpack.security.enabled: true) in Elasticsearch:
+# Option 1: Generate and use a service account token (Recommended for 8.x):
+#   docker exec -it elasticsearch bin/elasticsearch-service-tokens create elastic/kibana kibana-token
+#   elasticsearch.serviceAccountToken: "YOUR_SERVICE_ACCOUNT_TOKEN"
+#
+# Option 2: Use kibana_system credentials:
+#   elasticsearch.username: "kibana_system"
+#   elasticsearch.password: "YOUR_KIBANA_SYSTEM_PASSWORD"
+
+monitoring.ui.container.elasticsearch.enabled: true
